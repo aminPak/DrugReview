@@ -1,0 +1,132 @@
+@model IEnumerable<DrugReview.Models.Supplement>
+@{
+    ViewData["Title"] = "Supplements Shop";
+}
+
+<div class="container py-5">
+    <!-- Hero Section -->
+    <div class="text-center mb-5">
+        <h1 class="display-4 mb-3">Supplement Recommendations</h1>
+        <p class="lead text-muted">
+            Discover personalized supplement suggestions based on your health profile and medications.
+        </p>
+    </div>
+
+    <!-- Filters -->
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <select class="form-select">
+                                <option selected>Category</option>
+                                <option>Heart Health</option>
+                                <option>Bone Health</option>
+                                <option>Joint Health</option>
+                                <option>Digestive Health</option>
+                                <option>Stress Support</option>
+                                <option>Minerals</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <select class="form-select">
+                                <option selected>Sort By</option>
+                                <option>Price: Low to High</option>
+                                <option>Price: High to Low</option>
+                                <option>Rating</option>
+                                <option>Most Popular</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Search supplements...">
+                                <button class="btn btn-primary">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Products Grid -->
+    <div class="row g-4">
+        @foreach (var supplement in Model)
+        {
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100">
+                        <div class="position-relative">
+                            <img src="@supplement.ImageUrl" class="card-img-top" alt="@supplement.Name">
+                            <div class="position-absolute top-0 end-0 p-2">
+                                <span class="badge bg-primary">
+                                    <i class="fas fa-star text-warning"></i> @supplement.Rating
+                                </span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <h5 class="card-title mb-0">@supplement.Name</h5>
+                                <span class="badge bg-accent">@supplement.Category</span>
+                            </div>
+                            <p class="card-text text-muted small mb-2">@supplement.Brand</p>
+                            <p class="card-text">@supplement.Description</p>
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <span class="h5 mb-0">$@supplement.Price.ToString("0.00")</span>
+                                <div>
+                                    <a asp-action="Details" asp-route-id="@supplement.Id" class="btn btn-outline-primary btn-sm me-2">
+                                        <i class="fas fa-info-circle"></i> Details
+                                    </a>
+                                    <a href="@supplement.ExternalShopUrl" target="_blank" class="btn btn-accent btn-sm">
+                                        <i class="fas fa-shopping-cart"></i> Buy Now
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <small class="text-muted">
+                                <i class="fas fa-user-circle"></i> @supplement.ReviewCount reviews
+                            </small>
+                        </div>
+                    </div>
+                </div>
+        }
+    </div>
+
+    <!-- AI Recommendation Banner -->
+    <div class="card bg-gradient mt-5">
+        <div class="card-body text-center py-5">
+            <h2 class="text-white mb-4">Get Personalized AI Recommendations</h2>
+            <p class="text-white mb-4">
+                Our AI analyzes your health profile, medications, and lab results to suggest the most suitable supplements for you.
+            </p>
+            @if (User.Identity.IsAuthenticated)
+            {
+                    <a asp-action="Recommendations" class="btn btn-light btn-lg">
+                        <i class="fas fa-robot me-2"></i>View My Recommendations
+                    </a>
+            }
+            else
+            {
+                    <a asp-controller="Auth" asp-action="Register" class="btn btn-light btn-lg">
+                        <i class="fas fa-user-plus me-2"></i>Sign Up for Personalized Recommendations
+                    </a>
+            }
+        </div>
+    </div>
+</div>
+
+@section Styles {
+        <style>
+            .bg-gradient {
+                background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%) !important;
+            }
+
+            .card-img-top {
+                height: 200px;
+                object-fit: cover;
+            }
+        </style>
+}

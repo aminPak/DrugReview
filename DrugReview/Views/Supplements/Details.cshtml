@@ -1,0 +1,176 @@
+@model DrugReview.Models.Supplement
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<div class="container py-5">
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a asp-controller="Home" asp-action="Index">Home</a></li>
+            <li class="breadcrumb-item"><a asp-controller="Supplements" asp-action="Index">Supplements</a></li>
+            <li class="breadcrumb-item active">@Model.Name</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <!-- Product Image -->
+        <div class="col-md-5 mb-4">
+            <div class="card border-0 shadow-sm">
+                <img src="@Model.ImageUrl" class="card-img-top product-image" alt="@Model.Name">
+                <div class="card-body text-center">
+                    <div class="d-flex justify-content-center align-items-center">
+                        <span class="h5 mb-0 me-2">Rating:</span>
+                        <div class="d-flex align-items-center">
+                            <span class="h5 text-warning mb-0">@Model.Rating</span>
+                            <i class="fas fa-star text-warning ms-1"></i>
+                        </div>
+                        <span class="text-muted ms-2">(@Model.ReviewCount reviews)</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Info -->
+        <div class="col-md-7 mb-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <div>
+                            <h1 class="h2 mb-1">@Model.Name</h1>
+                            <p class="text-muted mb-0">by @Model.Brand</p>
+                        </div>
+                        <span class="badge bg-accent">@Model.Category</span>
+                    </div>
+
+                    <hr>
+
+                    <div class="mb-4">
+                        <h5>Description</h5>
+                        <p>@Model.Description</p>
+                    </div>
+
+                    <div class="mb-4">
+                        <h5>Benefits</h5>
+                        <p>@Model.Benefits</p>
+                    </div>
+
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5>Recommended Dosage</h5>
+                            <p>@Model.RecommendedDosage</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Ingredients</h5>
+                            <p>@Model.Ingredients</p>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h3 class="mb-0">$@Model.Price.ToString("0.00")</h3>
+                            <small class="text-success">
+                                <i class="fas fa-check-circle"></i> In Stock
+                            </small>
+                        </div>
+                        <a href="@Model.ExternalShopUrl" target="_blank" class="btn btn-lg btn-accent">
+                            <i class="fas fa-shopping-cart me-2"></i>Buy Now
+                        </a>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Always consult with your healthcare provider before starting any new supplement regimen.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Additional Information -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-body">
+                    <ul class="nav nav-tabs" id="productTabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="usage-tab" data-bs-toggle="tab" href="#usage" role="tab">
+                                Usage Guidelines
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="safety-tab" data-bs-toggle="tab" href="#safety" role="tab">
+                                Safety Information
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="reviews-tab" data-bs-toggle="tab" href="#reviews" role="tab">
+                                Reviews
+                            </a>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content py-4" id="productTabsContent">
+                        <div class="tab-pane fade show active" id="usage" role="tabpanel">
+                            <h5>How to Use</h5>
+                            <p>@Model.RecommendedDosage</p>
+                            <h5 class="mt-4">Best Time to Take</h5>
+                            <p>Follow the recommended dosage instructions and consult with your healthcare provider for personalized advice.</p>
+                        </div>
+                        <div class="tab-pane fade" id="safety" role="tabpanel">
+                            <h5>Precautions</h5>
+                            <ul>
+                                <li>Keep out of reach of children</li>
+                                <li>Store in a cool, dry place</li>
+                                <li>Do not use if safety seal is broken</li>
+                                <li>Consult healthcare provider if pregnant or nursing</li>
+                            </ul>
+                        </div>
+                        <div class="tab-pane fade" id="reviews" role="tabpanel">
+                            <div class="d-flex align-items-center mb-4">
+                                <div class="h1 mb-0 me-3">@Model.Rating</div>
+                                <div>
+                                    <div class="text-warning mb-1">
+                                        @for (int i = 1; i <= 5; i++)
+                                        {
+                                                if (i <= Math.Floor(Model.Rating ?? 0))
+                                                {
+                                                        <i class="fas fa-star"></i>
+                                                }
+                                                else if (i - (Model.Rating ?? 0) < 1)
+                                                {
+                                                        <i class="fas fa-star-half-alt"></i>
+                                                }
+                                                else
+                                                {
+                                                        <i class="far fa-star"></i>
+                                                }
+                                        }
+                                    </div>
+                                    <div class="text-muted">Based on @Model.ReviewCount reviews</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Styles {
+        <style>
+            .product-image {
+                height: 400px;
+                object-fit: cover;
+            }
+
+            .nav-tabs .nav-link {
+                color: var(--primary) !important;
+            }
+
+            .nav-tabs .nav-link.active {
+                color: var(--accent) !important;
+                border-bottom: 2px solid var(--accent);
+            }
+        </style>
+}
