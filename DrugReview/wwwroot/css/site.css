@@ -1,22 +1,584 @@
-html {
-  font-size: 14px;
+/* Root Variables */
+:root {
+    /* Primary Colors */
+    --primary: #0F4C5C;
+    --secondary: #197278;
+    --accent: #21A179;
+    /* Background Colors */
+    --background: #1C2D3F;
+    --surface: #F5F7F8;
+    --card-bg: #FFFFFF;
+    --dark-card-bg: #1E2A3A;
+    /* Text Colors */
+    --text-light: #FFFFFF;
+    --text-dark: #1C2D3F;
+    --text-muted: #6C757D;
+    --link-light: #9FEDD7;
+    --link-dark: #156759;
+    /* Status Colors */
+    --warning: #FFB30F;
+    --error: #D72638;
+    --success: #2EC4B6;
 }
 
-@media (min-width: 768px) {
-  html {
+/* Import Poppins font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* Base styles */
+html {
     font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
+    position: relative;
+    min-height: 100%;
 }
 
 body {
-  margin-bottom: 60px;
+    font-family: 'Poppins', sans-serif;
+    background-color: var(--surface);
+    color: var(--text-dark);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    margin: 0;
+    padding: 0;
+}
+
+main {
+    flex: 1 0 auto;
+    padding-bottom: 3rem;
+}
+
+/* Section Spacing */
+section {
+    padding: 5rem 0;
+}
+
+section + section {
+    margin-top: 1rem;
+}
+
+.container {
+    max-width: 1200px;
+    padding: 0 1.5rem;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 600;
+    color: var(--primary);
+    margin-bottom: 1.5rem;
+}
+
+.display-4 {
+    font-size: 2.75rem;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+}
+
+.lead {
+    font-size: 1.25rem;
+    font-weight: 400;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+}
+
+p {
+    line-height: 1.6;
+    margin-bottom: 1rem;
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: var(--primary);
+    border-color: var(--primary);
+    color: var(--text-light);
+}
+
+.btn-primary:hover {
+    background-color: var(--secondary);
+    border-color: var(--secondary);
+}
+
+.btn-accent {
+    background-color: var(--accent);
+    border-color: var(--accent);
+    color: var(--text-light);
+}
+
+.btn-accent:hover {
+    background-color: var(--secondary);
+    border-color: var(--secondary);
+}
+
+/* Cards */
+.card {
+    border: none;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease-in-out;
+    overflow: hidden;
+    margin-bottom: 2rem;
+}
+
+.card-body {
+    padding: 2rem;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+}
+
+/* Navigation */
+.navbar {
+    background-color: var(--primary);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 1rem 0;
+}
+
+.navbar-brand {
+    color: var(--text-light) !important;
+    font-weight: 600;
+}
+
+.nav-link {
+    color: var(--text-light) !important;
+    font-weight: 500;
+    opacity: 0.9;
+}
+
+.nav-link:hover {
+    color: var(--link-light) !important;
+    opacity: 1;
+}
+
+.navbar-toggler {
+    border-color: var(--text-light);
+}
+
+.navbar-toggler-icon {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(255, 255, 255, 0.85)' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+}
+
+/* Forms */
+.form-control {
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    padding: 0.75rem 1rem;
+}
+
+.form-control:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 0.2rem rgba(33, 161, 121, 0.25);
+}
+
+/* Alerts */
+.alert-success {
+    background-color: var(--success);
+    border-color: var(--success);
+    color: var(--text-light);
+}
+
+.alert-warning {
+    background-color: var(--warning);
+    border-color: var(--warning);
+    color: var(--background);
+}
+
+.alert-danger {
+    background-color: var(--error);
+    border-color: var(--error);
+    color: var(--text-light);
+}
+
+/* Footer */
+.footer {
+    position: relative;
+    width: 100%;
+    padding: 2rem 0;
+    background-color: var(--primary);
+    color: var(--text-light);
+    margin-top: 0;
+}
+
+.footer a {
+    color: var(--link-light);
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.footer a:hover {
+    color: var(--text-light);
+    text-decoration: underline;
+}
+
+/* Hero Section */
+.hero {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--background) 100%);
+    color: var(--text-light);
+    padding: 6rem 0;
+    margin-bottom: 0;
+}
+
+.hero h1,
+.hero .display-4,
+.hero p,
+.hero .lead {
+    color: var(--text-light);
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.hero h1 {
+    margin-bottom: 1.5rem;
+}
+
+.hero .btn {
+    padding: 0.75rem 2rem;
+    font-size: 1.1rem;
+}
+
+.hero .btn-light {
+    background-color: var(--text-light);
+    color: var(--primary);
+    border: none;
+}
+
+.hero .btn-light:hover {
+    background-color: var(--link-light);
+    color: var(--background);
+}
+
+.hero .btn-outline-light:hover {
+    color: var(--primary);
+}
+
+/* Feature Cards */
+.feature-card {
+    background: var(--card-bg);
+    color: var(--text-dark);
+    border-radius: 12px;
+    padding: 2.5rem 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    height: 100%;
+}
+
+.feature-card i {
+    font-size: 2.5rem;
+    color: var(--accent);
+    margin-bottom: 1.5rem;
+}
+
+.feature-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    color: var(--primary);
+}
+
+.feature-card p {
+    color: var(--text-dark);
+}
+
+/* Supplements Section */
+.supplements-section {
+    padding: 6rem 0;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--background) 100%);
+    color: var(--text-dark);
+}
+
+.supplements-section h2,
+.supplements-section .lead,
+.supplements-section .list-unstyled {
+    color: var(--text-dark);
+}
+
+.supplements-section .list-unstyled li {
+    font-size: 1.1rem;
+    padding: 0.5rem 0;
+    color: var(--text-dark); 
+}
+
+.supplements-section .list-unstyled li i {
+    color: var(--link-dark);
+}
+
+.supplements-section .card {
+    background-color: var(--card-bg);
+    border: none;
+    backdrop-filter: blur(10px);
+    height: 100%;
+}
+
+.supplements-section .card .card-body {
+    padding: 2rem;
+    color: var(--text-dark);
+}
+
+.supplements-section .card i {
+    font-size: 2.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.supplements-section .card h4 {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+    color: var(--primary);
+    font-weight: 600;
+}
+
+.supplements-section .card p {
+    color: var(--text-dark);
+}
+
+.supplements-section .btn-light {
+    background-color: var(--link-light);
+    color: var(--primary);
+    border: none;
+    font-weight: 500;
+}
+
+.supplements-section .btn-light:hover {
+    background-color: var(--link-light);
+    color: var(--background);
+}
+
+/* Trust Section */
+.trust-section {
+    padding: 6rem 0;
+    background-color: var(--surface);
+}
+
+.trust-section h2 {
+    color: var(--primary);
+    margin-bottom: 2rem;
+}
+
+.trust-section .list-unstyled li {
+    font-size: 1.1rem;
+    padding: 0.75rem 0;
+    color: var(--text-dark);
+}
+
+.trust-section .list-unstyled li i {
+    color: var(--accent);
+}
+
+.trust-section .card {
+    background-color: var(--card-bg);
+    height: 100%;
+}
+
+.trust-section .card-title {
+    color: var(--primary);
+}
+
+.trust-section .card-text {
+    color: var(--text-dark);
+}
+
+.trust-section .btn-outline-primary {
+    color: var(--primary);
+    border-color: var(--primary);
+}
+
+.trust-section .btn-outline-primary:hover {
+    background-color: var(--primary);
+    color: var(--text-light);
+}
+
+/* How It Works Section */
+.bg-light {
+    background-color: var(--surface) !important;
+    padding: 6rem 0;
+}
+
+.bg-light h4 {
+    margin: 1rem 0;
+}
+
+/* Utilities */
+.bg-primary {
+    background-color: var(--primary) !important;
+}
+
+.bg-secondary {
+    background-color: var(--secondary) !important;
+}
+
+.bg-accent {
+    background-color: var(--accent) !important;
+}
+
+.text-primary {
+    color: var(--primary) !important;
+}
+
+.text-secondary {
+    color: var(--secondary) !important;
+}
+
+.text-accent {
+    color: var(--accent) !important;
+}
+
+/* Animations */
+.fade-in {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    html {
+        font-size: 14px;
+    }
+
+    section {
+        padding: 4rem 0;
+    }
+
+    .hero {
+        padding: 4rem 0;
+    }
+
+    .display-4 {
+        font-size: 2.25rem;
+    }
+
+    .card-body {
+        padding: 1.5rem;
+    }
+
+    .feature-card {
+        padding: 2rem 1.5rem;
+    }
+
+    .supplements-section .col-6 {
+        padding: 0.75rem;
+    }
+
+    .supplements-section .card .card-body {
+        padding: 1.5rem;
+    }
+
+    .container {
+        padding: 0 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    section {
+        padding: 3rem 0;
+    }
+
+    .display-4 {
+        font-size: 2rem;
+    }
+
+    .lead {
+        font-size: 1.1rem;
+    }
+
+    .card-body {
+        padding: 1.25rem;
+    }
+
+    .feature-card {
+        padding: 1.5rem;
+    }
+
+    .supplements-section .col-6 {
+        padding: 0.5rem;
+    }
+}
+
+/* Dark Mode */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: var(--background);
+        color: var(--text-light);
+    }
+
+    .card, .feature-card {
+        background-color: var(--dark-card-bg);
+        color: var(--text-light);
+    }
+
+    .card h4,
+    .feature-card h3,
+    .trust-section h2,
+    .trust-section .card-title {
+        color: var(--link-light);
+    }
+
+    .card p,
+    .feature-card p,
+    .trust-section .card-text {
+        color: var(--text-light);
+        opacity: 0.9;
+    }
+
+    .supplements-section .card {
+        background-color: var(--dark-card-bg);
+    }
+
+    .supplements-section .card .card-body,
+    .supplements-section .card p {
+        color: var(--text-light);
+    }
+
+    .supplements-section .card h4 {
+        color: var(--link-light);
+    }
+
+    .btn-light {
+        background-color: var(--link-light);
+        color: var(--background);
+    }
+
+    .btn-light:hover {
+        background-color: var(--text-light);
+        color: var(--background);
+    }
+
+    .btn-outline-light {
+        border-color: var(--link-light);
+        color: var(--link-light);
+    }
+
+    .btn-outline-light:hover {
+        background-color: var(--link-light);
+        color: var(--background);
+    }
+}
+
+/* Gradient Backgrounds */
+.bg-gradient {
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+}
+
+/* Card Improvements */
+.card-img-top {
+    transition: transform 0.3s ease;
+}
+
+.card:hover .card-img-top {
+    transform: scale(1.05);
+}
+
+/* Button Improvements */
+.btn {
+    transition: all 0.3s ease;
+}
+
+.btn-light:hover {
+    background-color: var(--text-light);
+    color: var(--primary);
 }

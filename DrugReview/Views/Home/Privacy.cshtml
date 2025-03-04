@@ -1,6 +1,85 @@
 ﻿@{
     ViewData["Title"] = "Privacy Policy";
 }
-<h1>@ViewData["Title"]</h1>
 
-<p>Use this page to detail your site's privacy policy.</p>
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <h1 class="text-center mb-5">@ViewData["Title"]</h1>
+
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <section class="mb-5">
+                        <h2 class="h4 mb-4">Information We Collect</h2>
+                        <p>We collect the following types of information:</p>
+                        <ul>
+                            <li>Personal information (name, email, date of birth)</li>
+                            <li>Health conditions and allergies</li>
+                            <li>Medication history</li>
+                            <li>Lab test results</li>
+                        </ul>
+                    </section>
+
+                    <section class="mb-5">
+                        <h2 class="h4 mb-4">How We Use Your Information</h2>
+                        <p>Your information is used to:</p>
+                        <ul>
+                            <li>Provide personalized medication and supplement recommendations</li>
+                            <li>Analyze potential drug interactions</li>
+                            <li>Generate health insights</li>
+                            <li>Improve our services</li>
+                        </ul>
+                    </section>
+
+                    <section class="mb-5">
+                        <h2 class="h4 mb-4">Data Security</h2>
+                        <p>We implement strong security measures to protect your data:</p>
+                        <ul>
+                            <li>Encryption of sensitive information</li>
+                            <li>Secure data storage</li>
+                            <li>Regular security audits</li>
+                            <li>Access controls and authentication</li>
+                        </ul>
+                    </section>
+
+                    <section class="mb-5">
+                        <h2 class="h4 mb-4">Your Rights</h2>
+                        <p>You have the right to:</p>
+                        <ul>
+                            <li>Access your personal data</li>
+                            <li>Request data correction</li>
+                            <li>Delete your account</li>
+                            <li>Export your data</li>
+                        </ul>
+                    </section>
+
+                    <section class="mb-5">
+                        <h2 class="h4 mb-4">Third-Party Services</h2>
+                        <p>We use the following third-party services:</p>
+                        <ul>
+                            <li>External APIs for supplement information</li>
+                            <li>Medical databases for drug interaction data</li>
+                            <li>Analytics services to improve user experience</li>
+                        </ul>
+                    </section>
+
+                    <section>
+                        <h2 class="h4 mb-4">Contact Us</h2>
+                        <p>If you have any questions about our privacy policy, please contact us:</p>
+                        <ul>
+                            <li>Email: privacy@drugreview.com</li>
+                            <li>Phone: (555) 123-4567</li>
+                            <li>Address: 123 Health Street, Medical District, City, State 12345</li>
+                        </ul>
+                    </section>
+
+                    <hr class="my-5">
+
+                    <div class="text-muted text-center">
+                        <p>Last updated: @DateTime.Now.ToString("MMMM dd, yyyy")</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

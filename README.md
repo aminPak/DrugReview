@@ -37,23 +37,16 @@ This sleek web application delivers personalized supplement recommendations tail
 ---
 
 
-## 🎨 Screen Mocks
+## 🎨 Screencaptures
 
 ### **Home Page**
 
-![Home Page](image-placeholder.png)
+![Home Page](home-screencapture.png)
 
-### **Dashboard**
-
-![Dashboard](image-placeholder.png)
-
-### **Drug Review**
-
-![Drug Review](image-placeholder.png)
 
 ### **Supplement Shop**
 
-![Supplement Shop](image-placeholder.png)
+![Supplement Shop](shop-screencapture.png)
 
 ---
 
@@ -72,6 +65,18 @@ This sleek web application delivers personalized supplement recommendations tail
 ## 🤝 Contributing
 
 Contributions are welcome! Feel free to fork, open an issue, or submit a pull request. 🚀
+
+---
+
+
+## 🙏 Thanks & Credits
+
+### My colleagues on this project
+
+A big thank you to my the following platforms and technologies that helped in developing this project:
+
+- **OpenAI API & ChatGPT** for Design System and ideas.
+- **Cursor** AI Code Editor to help complete, debug and review codebase.
 
 ---
 
