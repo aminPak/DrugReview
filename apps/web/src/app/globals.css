@@ -1,26 +1,74 @@
 @import "tailwindcss";
 
+/*
+ * Colours mirror packages/ui/src/tokens.ts (palette.light / palette.dark). Keep them in sync.
+ */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --background: #f7f9f9;
+  --surface: #ffffff;
+  --surface-muted: #eef3f3;
+  --foreground: #0f1f24;
+  --muted-foreground: #51646a;
+  --border: #d9e2e3;
+  --primary: #0b6e6a;
+  --primary-foreground: #ffffff;
+  --primary-soft: #e0f1ef;
+  --danger: #b42318;
+  --danger-soft: #fdecea;
+  --warning: #9a5b00;
+  --warning-soft: #fff4e0;
+  --info: #1d5fa8;
+  --info-soft: #e8f0fb;
+  --radius: 0.75rem;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #0c1416;
+    --surface: #132125;
+    --surface-muted: #1a2c31;
+    --foreground: #e8f1f2;
+    --muted-foreground: #9db1b6;
+    --border: #26393e;
+    --primary: #4cc3b8;
+    --primary-foreground: #062a28;
+    --primary-soft: #123a37;
+    --danger: #ff8a7a;
+    --danger-soft: #3a1714;
+    --warning: #f5b74e;
+    --warning-soft: #36260b;
+    --info: #8cb8ef;
+    --info-soft: #14263d;
   }
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-soft: var(--primary-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+  --color-info: var(--info);
+  --color-info-soft: var(--info-soft);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+}
+
+* {
+  border-color: var(--border);
 }
