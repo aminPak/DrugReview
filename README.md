@@ -1,85 +1,77 @@
-# 🏥 AI-Powered Drug Review & Supplement Recommendation(Shop) Web App
+# DrugReview (working title)
 
-![Project Banner](main-banner1.jpg)
+A personal medication and supplement safety companion. Keep one list of everything you take, check it for interactions, and understand your lab results in plain language, in your own language.
 
-## 📌 Project Overview
+> **Status:** early scaffold (November 2026). The first prototype (ASP.NET Core MVC + Razor + Bootstrap) is kept in git history at commit `c1e429c`.
 
-This sleek web application delivers personalized supplement recommendations tailored to your health conditions and medications. Powered by AI, it fetches real-time supplement data from online shops, offering a seamless and modern user experience.
+## Product direction
 
----
+- **My cabinet:** one list of prescriptions, OTC drugs and supplements, added by search, barcode or a photo of the label.
+- **Interaction checks:** results come from a licensed clinical knowledge base. AI explains the result in plain language and cites its sources. It never decides whether a combination is safe.
+- **Lab results:** upload a photo or PDF, get structured values, trends over time and questions to ask your doctor.
+- **Everyday use:** reminders, a caregiver mode for managing a family member's meds, and a summary to take to a doctor's visit.
+- **Trust first:** recommendations are never tied to selling products.
 
-## 🚀 Features
+## Repository layout
 
-### 🔹 User Authentication
+| Path            | What it is                                                     | Stack                                   |
+| --------------- | -------------------------------------------------------------- | --------------------------------------- |
+| `apps/mobile`   | iOS and Android app, the main product                          | Expo SDK 58 (React Native), Expo Router |
+| `apps/web`      | Public pages (search traffic) and the signed-in web app        | Next.js 16 (App Router), Tailwind CSS 4 |
+| `apps/api`      | Backend API; interaction checks run here                       | Hono on Node.js, Zod, bundled by tsup   |
+| `packages/core` | Shared types, validation schemas and wording used by every app | TypeScript, Zod                         |
 
-- **Sign up & Login** (Secure authentication)
-- **Profile Management** (Store health data securely)
+Tooling: pnpm workspaces with a shared version catalog (`pnpm-workspace.yaml`), Turborepo, TypeScript 6, ESLint, Prettier, Vitest.
 
-### 🔹 AI-Powered Drug Review
+Planned, not set up yet: PostgreSQL + pgvector on Supabase (data, auth, file storage), a licensed interaction knowledge base, and the Claude API for reading labels and lab reports and for explanations.
 
-- **Enter Drug Name** and receive AI-generated analysis
-- **Store Review History** for easy access
+## Getting started
 
-### 🔹 Blood Test-Based Supplement Recommendations
+You need Node.js 22.18 or newer and pnpm 12. Install pnpm once:
 
-- **Upload/Insert Blood Test Results** (AI analyzes results)
-- **Receive Supplement Suggestions** based on deficiencies
+```bash
+npm install -g pnpm@12
+```
 
-### 🔹 Supplement Shop
+Install dependencies from the repository root:
 
-- **Browse Recommended Supplements**
-- **Add to Cart & Checkout** (Simple purchasing process)
+```bash
+pnpm install
+```
 
-### 🔹 Order & Review History
+Run one app at a time (each in its own terminal):
 
-- **View past orders** and manage recommendations
+```bash
+pnpm dev:api
+```
 
----
+```bash
+pnpm dev:web
+```
 
+```bash
+pnpm dev:mobile
+```
 
-## 🎨 Screencaptures
+The API listens on http://localhost:8787 (copy `apps/api/.env.example` to `apps/api/.env` to change it). The web app runs on http://localhost:3000. For the mobile app, scan the QR code with the Expo Go app or press `a` / `i` for an emulator.
 
-### **Home Page**
+## Checks
 
-![Home Page](home-screencapture.png)
+| Command             | What it does                            |
+| ------------------- | --------------------------------------- |
+| `pnpm check`        | Type-check, lint and test every package |
+| `pnpm build`        | Build the API bundle and the web app    |
+| `pnpm format`       | Format everything with Prettier         |
+| `pnpm format:check` | Fail if any file isn't formatted        |
 
+## Safety rule for interaction checks
 
-### **Supplement Shop**
+An interaction check returns either `checked` (with a list, possibly empty) or `unavailable`. Apps must show `unavailable` as "we couldn't check this", never as "no interactions found". Until a knowledge base is connected, the API always answers `unavailable`.
 
-![Supplement Shop](shop-screencapture.png)
+## Disclaimer
 
----
+This software gives general information. It is not medical advice and does not replace a clinician.
 
+## License
 
-## 🛠️ Tech Stack
-
-- **Frontend:** Razor Views + jQuery + Bootstrap
-- **Backend:** .NET Core, ASP.NET Core MVC, Web API
-- **Database:** SQL Server (EF Core)
-- **AI Integration:** ...
-- **Authentication:** JWT / Azure AD B2C
-- **Hosting:** ...
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome! Feel free to fork, open an issue, or submit a pull request. 🚀
-
----
-
-
-## 🙏 Thanks & Credits
-
-### My colleagues on this project
-
-A big thank you to my the following platforms and technologies that helped in developing this project:
-
-- **OpenAI API & ChatGPT** for Design System and ideas.
-- **Cursor** AI Code Editor to help complete, debug and review codebase.
-
----
-
-## 📜 License
-
-This project is licensed under the **MIT License**.
+MIT. See [LICENSE](LICENSE). The Expo starter code in `apps/mobile` is also MIT-licensed by Expo (see `apps/mobile/LICENSE`).

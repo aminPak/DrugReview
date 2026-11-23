@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+
+# Build output and caches
+dist/
+build/
+.next/
+out/
+.expo/
+web-build/
+.turbo/
+coverage/
+*.tsbuildinfo
+
+# Environment files (commit .env.example only)
+.env
+.env.*
+!.env.example
+
+# Editors and OS
+.vs/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

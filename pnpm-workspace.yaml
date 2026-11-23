@@ -1,0 +1,22 @@
+packages:
+  - apps/*
+  - packages/*
+
+# One version of these across every app and package. Reference them as "catalog:".
+# React must match what the current Expo SDK expects, or the mobile app ends up
+# with two copies of React.
+catalog:
+  react: 19.3.0
+  react-dom: 19.3.0
+  "@types/react": ~19.3.0
+  "@types/node": ^22.18.0
+  eslint: ^9
+  typescript: ~6.0.3
+  vitest: ^5.1.1
+  zod: ^4.6.7
+
+# Dependencies allowed (true) or refused (false) to run install scripts.
+allowBuilds:
+  esbuild: true
+  sharp: false
+  unrs-resolver: false
