@@ -21,6 +21,7 @@ export default function RootLayout() {
       >
         <Stack.Screen name="index" options={{ title: m.appName }} />
         <Stack.Screen name="add" options={{ title: m.search.title, presentation: "modal" }} />
+        <Stack.Screen name="profile" options={{ title: m.profile.title }} />
         <Stack.Screen name="results" options={{ title: m.results.title }} />
       </Stack>
     </CabinetProvider>

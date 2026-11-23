@@ -64,6 +64,7 @@ user's list  ──POST /v1/interactions/check──▶
 ```
 
 - **Why US labels for a Canadian launch:** Canadian product monographs are PDFs with no free structured API, while the active ingredients are the same. v1.1 adds Canadian product search (Health Canada's Drug Product Database and Natural Health Products Database) and maps each product to its ingredients, which then use this same check.
+- **Health conditions** are checked the same way, against the label sections that matter (boxed warning, contraindications, warnings…). If the labels already read don't mention a condition, the API asks openFDA for any label of that ingredient that does. Details: [safety-checks.md](safety-checks.md).
 - **Matching is plain text search**, not AI: the other item's ingredient name, or a supplement's known names (for example "St. John's wort", "Hypericum"). It's deterministic and every finding quotes the sentence it came from.
 - **Supplements** come from a curated list of common supplement ingredients and their alternative names (`packages/core/src/supplements.ts`). A supplement–supplement pair has no FDA label, so it's reported as "couldn't check".
 - **If a source can't be reached**, the API returns `unavailable` instead of a partial answer.

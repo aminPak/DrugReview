@@ -37,6 +37,17 @@ describe("findMention", () => {
     ).toBe("Calcium supplements reduce absorption.");
   });
 
+  it("finds minerals in the group phrases labels use", () => {
+    const terms = supplementTerms(getSupplement("magnesium")!);
+    expect(
+      findMention("Administer at least 2 hours before magnesium/aluminum antacids.", terms),
+    ).not.toBeNull();
+    expect(
+      findMention("Decreased absorption with multivalent cation-containing products.", terms),
+    ).not.toBeNull();
+    expect(findMention("Serum magnesium levels were measured.", terms)).toBeNull();
+  });
+
   it("ignores terms too short to search safely", () => {
     expect(findMention("It is the same as before.", ["sa"])).toBeNull();
   });

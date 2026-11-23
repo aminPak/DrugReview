@@ -10,6 +10,7 @@ const ingredients: Record<string, { rxcui: string; name: string }[]> = {
   "161": [{ rxcui: "161", name: "acetaminophen" }],
   "202433": [{ rxcui: "161", name: "acetaminophen" }], // Tylenol
   "999": [{ rxcui: "999", name: "unlabelled" }],
+  "2551": [{ rxcui: "2551", name: "ciprofloxacin" }],
 };
 
 const labels: Record<string, DrugLabel> = {
@@ -34,7 +35,32 @@ const labels: Record<string, DrugLabel> = {
     title: "Acetaminophen",
     sections: { warnings: "Do not use with any other drug containing acetaminophen." },
   },
+  ciprofloxacin: {
+    setId: "cipro-set",
+    title: "Cipro",
+    sections: {
+      boxed_warning:
+        "Fluoroquinolones may exacerbate muscle weakness in patients with myasthenia gravis. Avoid in patients with known history of myasthenia gravis.",
+      warnings_and_cautions: "Use with caution in patients with renal impairment.",
+    },
+  },
+  "magnesium sulfate": {
+    setId: "mgso4-set",
+    title: "Magnesium Sulfate Injection",
+    sections: {
+      contraindications: "Do not use in heart block.",
+    },
+  },
 };
+
+/** A label that's only found by the targeted search (not among the newest labels). */
+const extraLabels: DrugLabel[] = [
+  {
+    setId: "mgso4-dextrose-set",
+    title: "Magnesium sulfate in dextrose",
+    sections: { contraindications: "Contraindicated in patients with myasthenia gravis." },
+  },
+];
 
 function fakeData(overrides: Partial<DrugData> = {}): DrugData {
   return {
@@ -44,7 +70,13 @@ function fakeData(overrides: Partial<DrugData> = {}): DrugData {
         ? { rxcui: "11289", name: "warfarin", ingredients: ingredients["11289"]! }
         : null,
     ingredients: async (rxcui) => ingredients[rxcui] ?? [],
-    label: async (name) => labels[name] ?? null,
+    labels: async (name) => (labels[name] ? [labels[name]] : []),
+    labelsMentioning: async (name, terms, sections) =>
+      [...extraLabels, ...(labels[name] ? [labels[name]] : [])].filter(
+        (label) =>
+          label.title.toLowerCase().includes(name) &&
+          sections.some((s) => terms.some((t) => label.sections[s]?.toLowerCase().includes(t))),
+      ),
     ...overrides,
   };
 }
@@ -58,11 +90,11 @@ const aspirin = { kind: "medicine", name: "Aspirin", rxcui: "1191" };
 const ginkgo = { kind: "supplement", name: "Ginkgo biloba", supplementId: "ginkgo" };
 const zinc = { kind: "supplement", name: "Zinc", supplementId: "zinc" };
 
-async function check(items: unknown[], data?: DrugData) {
+async function check(items: unknown[], data?: DrugData, profile?: unknown) {
   const res = await appWith(data).request("/v1/interactions/check", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ items }),
+    body: JSON.stringify(profile ? { items, profile } : { items }),
   });
   return { status: res.status, result: InteractionCheckResult.parse(await res.json()) };
 }
@@ -154,12 +186,69 @@ describe("interaction check", () => {
 
   it("answers 'unavailable' when a data source fails", async () => {
     const failing = fakeData({
-      label: async () => {
+      labels: async () => {
         throw new UpstreamError("openFDA", "HTTP 500");
       },
     });
     const { status, result } = await check([warfarin, ginkgo], failing);
     expect(status).toBe(503);
     expect(result.status).toBe("unavailable");
+  });
+});
+
+describe("health profile", () => {
+  const cipro = { kind: "medicine", name: "Ciprofloxacin", rxcui: "2551" };
+  const magnesium = { kind: "supplement", name: "Magnesium", supplementId: "magnesium" };
+  const mg = { conditions: [{ id: "myasthenia-gravis" }] };
+
+  it("allows one item when the profile has a condition", async () => {
+    const { status } = await check([cipro], undefined, mg);
+    expect(status).toBe(200);
+  });
+
+  it("flags a boxed warning about the person's condition", async () => {
+    const { result } = await check([cipro], undefined, mg);
+    if (result.status !== "checked") throw new Error("expected checked");
+    expect(result.findings).toEqual([
+      {
+        type: "condition_caution",
+        item: 0,
+        condition: 0,
+        section: "boxed_warning",
+        excerpt:
+          "Fluoroquinolones may exacerbate muscle weakness in patients with myasthenia gravis.",
+        source: {
+          name: "Cipro label (DailyMed)",
+          url: "https://dailymed.nlm.nih.gov/dailymed/lookup.cfm?setid=cipro-set",
+        },
+      },
+    ]);
+  });
+
+  it("finds a condition warning on any label of a supplement's medicine form", async () => {
+    const { result } = await check([magnesium], undefined, mg);
+    if (result.status !== "checked") throw new Error("expected checked");
+    expect(result.findings[0]).toMatchObject({
+      type: "condition_caution",
+      item: 0,
+      viaIngredient: "magnesium sulfate",
+      section: "contraindications",
+      excerpt: "Contraindicated in patients with myasthenia gravis.",
+    });
+  });
+
+  it("searches labels for a condition typed in by the person", async () => {
+    const { result } = await check([cipro], undefined, {
+      conditions: [{ custom: "renal impairment" }],
+    });
+    if (result.status !== "checked") throw new Error("expected checked");
+    expect(result.findings).toHaveLength(1);
+    expect(result.findings[0]).toMatchObject({ section: "warnings_and_cautions" });
+  });
+
+  it("lists items it couldn't check against the conditions", async () => {
+    const { result } = await check([cipro, ginkgo], undefined, mg);
+    if (result.status !== "checked") throw new Error("expected checked");
+    expect(result.uncheckedForConditions).toEqual([1]);
   });
 });

@@ -26,14 +26,15 @@ It replaces the first prototype's idea of "AI drug review + supplement shop". Th
 
 ## Core features
 
-| Feature                         | What it does                                                                                                                                                           | Version |
-| ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| **My list**                     | One list of prescriptions, OTC medicines and supplements. Add by search; later by barcode or a photo of the label.                                                     | v1      |
-| **Interaction check**           | Checks every pair in the list against official sources and shows what they say, with a link to the source.                                                             | v1      |
-| **Public checker (web)**        | The same check on the website, no account needed. Brings people in from search.                                                                                        | v1      |
-| **Plain-language explanations** | AI rewrites the official text in plain language, in the user's language, citing the source sentence.                                                                   | v2      |
-| **Lab results**                 | A photo or PDF becomes structured values the user confirms. Trends, questions for the doctor, "seek care now" for dangerous values. Units (mg/dL vs mmol/L) and LOINC. | v3      |
-| **Everyday use**                | Reminders, caregiver/family mode, a summary PDF for doctor visits, Apple Health and Android Health Connect sync.                                                       | v3+     |
+| Feature                         | What it does                                                                                                                                                                    | Version |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| **My list**                     | One list of prescriptions, OTC medicines and supplements. Add by search; later by barcode or a photo of the label.                                                              | v1      |
+| **Health profile**              | Conditions, life stage (pregnancy, breastfeeding, 65+) and anything typed as written; later lab values, allergies and diet. Stored on the device.                               | v1      |
+| **Safety check**                | Checks every pair of items, and every item against the health profile, against official sources, and shows what they say with a link. See [safety-checks.md](safety-checks.md). | v1      |
+| **Public checker (web)**        | The same check on the website, no account needed. Brings people in from search.                                                                                                 | v1      |
+| **Plain-language explanations** | AI rewrites the official text in plain language, in the user's language, citing the source sentence.                                                                            | v2      |
+| **Lab results**                 | A photo or PDF becomes structured values the user confirms. Trends, questions for the doctor, "seek care now" for dangerous values. Units (mg/dL vs mmol/L) and LOINC.          | v3      |
+| **Everyday use**                | Reminders, caregiver/family mode, a summary PDF for doctor visits, Apple Health and Android Health Connect sync.                                                                | v3+     |
 
 ## Safety principles
 

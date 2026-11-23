@@ -59,14 +59,18 @@ export function findMention(
   );
   const ignore = (options.ignoreWhenFollowedBy ?? []).map((w) => w.toLowerCase());
 
-  for (const sentence of splitSentences(text)) {
+  const sentences = splitSentences(text);
+  for (const [index, sentence] of sentences.entries()) {
     for (const match of sentence.matchAll(pattern)) {
       const after = sentence
         .slice(match.index + match[0].length)
         .trimStart()
         .toLowerCase();
       if (ignore.some((word) => after.startsWith(word))) continue;
-      return trimExcerpt(sentence, match.index, match[0].length);
+      // A heading on its own ("Pregnant Women:") says nothing; include what follows it.
+      const next = sentences[index + 1];
+      const full = sentence.endsWith(":") && next ? `${sentence} ${next}` : sentence;
+      return trimExcerpt(full, match.index, match[0].length);
     }
   }
   return null;

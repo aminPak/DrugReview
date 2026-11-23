@@ -58,7 +58,9 @@ export const sectionTone = {
   warnings: "warning",
   precautions: "warning",
   do_not_use: "danger",
+  ask_doctor: "warning",
   ask_doctor_or_pharmacist: "warning",
+  pregnancy_or_breast_feeding: "warning",
   drug_interactions: "info",
 } as const;
 export type Tone = (typeof sectionTone)[keyof typeof sectionTone];

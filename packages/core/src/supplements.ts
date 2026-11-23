@@ -137,10 +137,56 @@ function mineral(word: string, salts: string[]): string[] {
     `${word} supplements`,
     `${word}-containing`,
     `${word} containing`,
+    `containing ${word}`,
     `${word} salts`,
     `${word} products`,
     `oral ${word}`,
+    `${word}/aluminum`,
+    `aluminum/${word}`,
+    // Labels often group minerals together, e.g. ciprofloxacin's "multivalent cation-containing
+    // products". These phrases apply to calcium, iron, magnesium and zinc alike.
+    // (Declared inside the function: SUPPLEMENTS above calls this while the module loads.)
+    ...(["calcium", "iron", "magnesium", "zinc"].includes(word)
+      ? [
+          "multivalent cation",
+          "multivalent cations",
+          "multivalent cation-containing",
+          "polyvalent cation",
+          "polyvalent cations",
+          "divalent cation",
+          "divalent cations",
+          "di- and trivalent cations",
+          "metal cations",
+        ]
+      : []),
   ];
+}
+
+/**
+ * Supplements have no label of their own, but many of their ingredients are also sold as
+ * medicines with an official label (for example magnesium sulfate, or phytonadione for vitamin K).
+ * Those labels are searched for this supplement, and findings say which form the label is for.
+ */
+const LABEL_INGREDIENTS: Readonly<Record<string, readonly string[]>> = {
+  caffeine: ["caffeine"],
+  calcium: ["calcium carbonate"],
+  cbd: ["cannabidiol"],
+  "fish-oil": ["omega-3-acid ethyl esters"],
+  "folic-acid": ["folic acid"],
+  iron: ["ferrous sulfate"],
+  magnesium: ["magnesium sulfate", "magnesium hydroxide", "magnesium oxide"],
+  melatonin: [],
+  niacin: ["niacin"],
+  potassium: ["potassium chloride"],
+  "vitamin-b12": ["cyanocobalamin"],
+  "vitamin-d": ["ergocalciferol", "cholecalciferol"],
+  "vitamin-k": ["phytonadione"],
+  zinc: ["zinc sulfate"],
+};
+
+/** Medicine forms of a supplement whose official labels can be searched. */
+export function supplementLabelIngredients(supplement: Supplement): readonly string[] {
+  return LABEL_INGREDIENTS[supplement.id] ?? [];
 }
 
 const byId = new Map(SUPPLEMENTS.map((s) => [s.id, s]));

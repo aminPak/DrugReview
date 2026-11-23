@@ -1,5 +1,6 @@
 export * from "./api-client";
 export * from "./cabinet";
+export * from "./conditions";
 export * from "./drugs";
 export * from "./interactions";
 export * from "./matching";

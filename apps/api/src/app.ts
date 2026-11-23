@@ -63,7 +63,8 @@ export function createApp({ allowedOrigins, data, logRequests = true }: AppOptio
   );
 
   app.post("/v1/interactions/check", zValidator("json", InteractionCheckRequest), async (c) => {
-    const result = await checkInteractions(c.req.valid("json").items, data);
+    const { items, profile } = c.req.valid("json");
+    const result = await checkInteractions(items, data, profile);
     return c.json(result, result.status === "checked" ? 200 : 503);
   });
 
