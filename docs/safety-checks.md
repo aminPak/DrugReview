@@ -41,7 +41,14 @@ Clinical review should check the phrases and map each condition to SNOMED CT Can
 5. One finding per item and condition: the most serious section, with the quoted sentence and a link to the label.
 6. Items with no label are listed as "not checked against your conditions", never as safe.
 
-Results show **"For your health conditions"** first, grouped as "Because you have: …", then findings between items, then what was checked with nothing found, then what couldn't be checked.
+Results are ordered by priority, taken from the label section (`findingPriority` in `packages/core/src/present.ts`), not from a clinical severity grade:
+
+1. **Serious warnings** (boxed warning, contraindications, "do not use", or the same ingredient twice): a solid red alert at the top, with red cards and bold titles.
+2. **Cautions** (drug interactions, warnings, precautions, "ask a doctor", pregnancy): amber cards.
+3. **Advice**: talk to a pharmacist or doctor.
+4. **Good to know**: what was checked with nothing found, and what couldn't be checked, in muted cards.
+
+Within a priority, the most serious section comes first, and condition findings say "Because you have: …".
 
 ## Making it more intelligent: the layers
 

@@ -15,6 +15,8 @@ export const palette = {
     primarySoft: "#e0f1ef",
     danger: "#b42318",
     dangerSoft: "#fdecea",
+    /** Text on a solid `danger` background. */
+    onDanger: "#ffffff",
     warning: "#9a5b00",
     warningSoft: "#fff4e0",
     info: "#1d5fa8",
@@ -32,6 +34,7 @@ export const palette = {
     primarySoft: "#123a37",
     danger: "#ff8a7a",
     dangerSoft: "#3a1714",
+    onDanger: "#2a0905",
     warning: "#f5b74e",
     warningSoft: "#36260b",
     info: "#8cb8ef",
@@ -50,17 +53,10 @@ export const fontSize = { xs: 12, sm: 14, md: 16, lg: 18, xl: 22, xxl: 28 } as c
 
 export const fontWeight = { regular: "400", medium: "500", semibold: "600", bold: "700" } as const;
 
-/** Colour role for each label section, most serious first. */
-export const sectionTone = {
-  boxed_warning: "danger",
-  contraindications: "danger",
-  warnings_and_cautions: "warning",
-  warnings: "warning",
-  precautions: "warning",
-  do_not_use: "danger",
-  ask_doctor: "warning",
-  ask_doctor_or_pharmacist: "warning",
-  pregnancy_or_breast_feeding: "warning",
-  drug_interactions: "info",
-} as const;
-export type Tone = (typeof sectionTone)[keyof typeof sectionTone];
+export type Tone = "danger" | "warning" | "info";
+
+/** Colour role for each finding priority (see `findingPriority` in @drugreview/core). */
+export const priorityTone = {
+  high: "danger",
+  caution: "warning",
+} as const satisfies Record<string, Tone>;

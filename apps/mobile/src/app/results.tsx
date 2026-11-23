@@ -4,16 +4,16 @@ import {
   displayName,
   type Finding,
   findingTitle,
-  groupByCondition,
   type InteractionCheckResult,
   pairLabel,
+  type Priority,
   type ProfileCondition,
   quietConditions,
   quietPairs,
-  splitFindings,
+  rankFindings,
   viaNote,
 } from "@drugreview/core";
-import { sectionTone, spacing } from "@drugreview/ui";
+import { priorityTone, radius, spacing } from "@drugreview/ui";
 import * as WebBrowser from "expo-web-browser";
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "react-native";
@@ -21,7 +21,7 @@ import { ActivityIndicator, Pressable, ScrollView, StyleSheet, View } from "reac
 import { AppText, Badge, Button, Card } from "@/components/ui";
 import { api, m } from "@/lib/app";
 import { useCabinet } from "@/lib/cabinet";
-import { useColors } from "@/lib/theme";
+import { toneColors, useColors } from "@/lib/theme";
 
 interface Snapshot {
   items: CabinetItem[];
@@ -71,81 +71,135 @@ export default function ResultsScreen() {
     );
   }
 
-  const { forConditions, betweenItems } = splitFindings(result.findings);
-  const groups = groupByCondition(forConditions, state.conditions.length);
+  const groups = rankFindings(result.findings);
+  const count = (p: Priority) => groups.find((g) => g.priority === p)?.findings.length ?? 0;
+  const highCount = count("high");
+  const cautionCount = count("caution");
+  const total = result.findings.length;
   const quiet = quietPairs(state.items.length, result.findings, result.unchecked);
   const quietConds = quietConditions(result, state.items.length, state.conditions.length);
-  const total = forConditions.length + betweenItems.length;
   const hasUnchecked = result.unchecked.length > 0 || result.uncheckedForConditions.length > 0;
+  const hasNotices = hasUnchecked || (total > 0 && (quiet.length > 0 || quietConds.length > 0));
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
-      <View style={styles.summary}>
-        <AppText variant="title">
-          {total > 0 ? m.results.foundTitle(total) : m.results.noneFoundTitle}
-        </AppText>
-        {total === 0 && <AppText variant="muted">{m.results.noneFoundBody}</AppText>}
-      </View>
-
-      {groups.length > 0 && <AppText variant="heading">{m.results.forConditionsTitle}</AppText>}
-      {groups.map((group) => (
-        <View key={group.condition} style={styles.group}>
-          <AppText variant="muted" style={styles.groupTitle}>
-            {m.results.becauseYouHave(conditionName(state.conditions[group.condition]))}
-          </AppText>
-          {group.findings.map((finding, index) => (
-            <FindingCard key={index} finding={finding} snapshot={state} />
-          ))}
+      {total === 0 ? (
+        <View style={styles.summary}>
+          <AppText variant="title">{m.results.noneFoundTitle}</AppText>
+          <AppText variant="muted">{m.results.noneFoundBody}</AppText>
         </View>
-      ))}
-
-      {betweenItems.length > 0 && groups.length > 0 && (
-        <AppText variant="heading">{m.results.betweenItemsTitle}</AppText>
+      ) : (
+        <View style={styles.summary}>
+          {highCount > 0 ? (
+            <View
+              accessibilityRole="alert"
+              style={[styles.banner, { backgroundColor: colors.danger }]}
+            >
+              <AppText variant="title" color={colors.onDanger} style={styles.bannerTitle}>
+                {m.results.highAlertTitle(highCount)}
+              </AppText>
+              <AppText color={colors.onDanger} style={styles.bold}>
+                {m.results.highAlertBody}
+              </AppText>
+              {cautionCount > 0 && (
+                <AppText color={colors.onDanger}>+ {m.results.cautionCount(cautionCount)}</AppText>
+              )}
+            </View>
+          ) : (
+            <View
+              style={[
+                styles.banner,
+                {
+                  backgroundColor: colors.warningSoft,
+                  borderColor: colors.warning,
+                  borderWidth: 2,
+                },
+              ]}
+            >
+              <AppText variant="heading" style={styles.bannerTitle}>
+                {m.results.foundTitle(total)}
+              </AppText>
+            </View>
+          )}
+          <AppText variant="small">{m.results.rankingNote}</AppText>
+        </View>
       )}
-      {betweenItems.map((finding, index) => (
-        <FindingCard key={index} finding={finding} snapshot={state} />
-      ))}
 
-      {total > 0 && quietConds.length > 0 && (
-        <Card tone="neutral">
-          <AppText variant="heading">{m.results.quietConditionsTitle}</AppText>
-          <AppText variant="muted">{m.results.quietBody}</AppText>
-          {quietConds.map((i) => (
-            <AppText key={i}>• {conditionName(state.conditions[i])}</AppText>
-          ))}
-        </Card>
-      )}
+      {groups.map((group) => {
+        const text = m.results.priority[group.priority];
+        return (
+          <View key={group.priority} style={styles.group}>
+            <AppText
+              variant="heading"
+              color={toneColors(colors, priorityTone[group.priority]).fg}
+              style={styles.groupTitle}
+            >
+              {text.title} ({group.findings.length})
+            </AppText>
+            <AppText variant="muted">{text.body}</AppText>
+            {group.findings.map((finding, index) => (
+              <FindingCard
+                key={index}
+                finding={finding}
+                priority={group.priority}
+                snapshot={state}
+              />
+            ))}
+          </View>
+        );
+      })}
 
-      {total > 0 && quiet.length > 0 && (
-        <Card tone="neutral">
-          <AppText variant="heading">{m.results.quietTitle}</AppText>
-          <AppText variant="muted">{m.results.quietBody}</AppText>
-          {quiet.map((pair) => (
-            <AppText key={pair.between.join("-")}>• {pairLabel(pair, state.items)}</AppText>
-          ))}
-        </Card>
+      <Card tone="primary">
+        <AppText style={styles.bold}>{m.results.talkToPharmacist}</AppText>
+      </Card>
+
+      {hasNotices && (
+        <AppText variant="small" style={styles.noticesTitle}>
+          {m.results.noticesTitle.toUpperCase()}
+        </AppText>
       )}
 
       {hasUnchecked && (
         <Card tone="neutral">
-          <AppText variant="heading">{m.results.uncheckedTitle}</AppText>
-          <AppText variant="muted">{m.results.uncheckedBody}</AppText>
+          <AppText style={styles.bold}>{m.results.uncheckedTitle}</AppText>
+          <AppText variant="small">{m.results.uncheckedBody}</AppText>
           {result.uncheckedForConditions.map((i) => (
-            <AppText key={`c${i}`}>
+            <AppText key={`c${i}`} variant="muted">
               • {m.results.uncheckedForConditions(displayName(state.items[i]?.name ?? ""))}
             </AppText>
           ))}
           {result.unchecked.map((pair) => (
-            <AppText key={pair.between.join("-")}>
+            <AppText key={pair.between.join("-")} variant="muted">
               • {pairLabel(pair, state.items)}: {m.results.unchecked[pair.reason]}
             </AppText>
           ))}
         </Card>
       )}
 
-      <Card tone="primary">
-        <AppText>{m.results.talkToPharmacist}</AppText>
-      </Card>
+      {total > 0 && quietConds.length > 0 && (
+        <Card tone="neutral">
+          <AppText style={styles.bold}>{m.results.quietConditionsTitle}</AppText>
+          <AppText variant="small">{m.results.quietBody}</AppText>
+          {quietConds.map((i) => (
+            <AppText key={i} variant="muted">
+              • {conditionName(state.conditions[i])}
+            </AppText>
+          ))}
+        </Card>
+      )}
+
+      {total > 0 && quiet.length > 0 && (
+        <Card tone="neutral">
+          <AppText style={styles.bold}>{m.results.quietTitle}</AppText>
+          <AppText variant="small">{m.results.quietBody}</AppText>
+          {quiet.map((pair) => (
+            <AppText key={pair.between.join("-")} variant="muted">
+              • {pairLabel(pair, state.items)}
+            </AppText>
+          ))}
+        </Card>
+      )}
+
       <AppText variant="small">{m.disclaimer}</AppText>
       <AppText variant="small">
         {m.results.checkedAt(new Date(result.checkedAt).toLocaleString())}
@@ -154,39 +208,68 @@ export default function ResultsScreen() {
   );
 }
 
-function FindingCard({ finding, snapshot }: { finding: Finding; snapshot: Snapshot }) {
+function FindingCard({
+  finding,
+  priority,
+  snapshot,
+}: {
+  finding: Finding;
+  priority: Priority;
+  snapshot: Snapshot;
+}) {
   const colors = useColors();
+  const high = priority === "high";
+  const tone = toneColors(colors, priorityTone[priority]);
   const title = findingTitle(finding, snapshot.items, m, snapshot.conditions);
-
-  if (finding.type === "same_ingredient") {
-    return (
-      <Card style={{ borderColor: colors.danger }}>
-        <AppText variant="heading">{title}</AppText>
-        <AppText variant="muted">{m.results.sameIngredientBody}</AppText>
-      </Card>
-    );
-  }
-
   const via = viaNote(finding, snapshot.items, m);
+
   return (
-    <Card>
-      <Badge
-        label={m.results.inSection(m.sections[finding.section])}
-        tone={sectionTone[finding.section]}
-      />
-      <AppText variant="heading">{title}</AppText>
-      <View style={[styles.quote, { borderLeftColor: colors.border }]}>
-        <AppText variant="muted">“{finding.excerpt}”</AppText>
+    <Card
+      style={{
+        borderLeftWidth: 6,
+        borderLeftColor: tone.fg,
+        ...(high ? { backgroundColor: colors.dangerSoft, borderColor: colors.danger } : null),
+      }}
+    >
+      <View style={styles.tags}>
+        <View style={[styles.tag, { backgroundColor: high ? colors.danger : tone.bg }]}>
+          <AppText variant="small" color={high ? colors.onDanger : tone.fg} style={styles.tagText}>
+            {m.results.priority[priority].tag.toUpperCase()}
+          </AppText>
+        </View>
+        {finding.type !== "same_ingredient" && (
+          <Badge label={m.results.inSection(m.sections[finding.section])} tone="neutral" />
+        )}
       </View>
-      {via && <AppText variant="small">{via}</AppText>}
-      <Pressable
-        accessibilityRole="link"
-        onPress={() => WebBrowser.openBrowserAsync(finding.source.url)}
-      >
-        <AppText color={colors.primary} style={styles.link}>
-          {m.results.openLabel} ↗
+
+      {finding.type === "condition_caution" && (
+        <AppText color={colors.primary} style={styles.bold}>
+          {m.results.becauseYouHave(conditionName(snapshot.conditions[finding.condition]))}
         </AppText>
-      </Pressable>
+      )}
+
+      <AppText variant="heading" style={high ? styles.highTitle : undefined}>
+        {title}
+      </AppText>
+
+      {finding.type === "same_ingredient" ? (
+        <AppText variant={high ? "body" : "muted"}>{m.results.sameIngredientBody}</AppText>
+      ) : (
+        <>
+          <View style={[styles.quote, { borderLeftColor: high ? colors.danger : colors.border }]}>
+            <AppText variant={high ? "body" : "muted"}>“{finding.excerpt}”</AppText>
+          </View>
+          {via && <AppText variant="small">{via}</AppText>}
+          <Pressable
+            accessibilityRole="link"
+            onPress={() => WebBrowser.openBrowserAsync(finding.source.url)}
+          >
+            <AppText color={colors.primary} style={styles.link}>
+              {m.results.openLabel} ↗
+            </AppText>
+          </Pressable>
+        </>
+      )}
     </Card>
   );
 }
@@ -194,9 +277,17 @@ function FindingCard({ finding, snapshot }: { finding: Finding; snapshot: Snapsh
 const styles = StyleSheet.create({
   center: { flex: 1, alignItems: "center", justifyContent: "center", gap: spacing.md },
   content: { padding: spacing.lg, gap: spacing.md, paddingBottom: spacing.xxl * 2 },
-  summary: { gap: spacing.xs, marginBottom: spacing.xs },
+  summary: { gap: spacing.sm, marginBottom: spacing.xs },
+  banner: { borderRadius: radius.lg, padding: spacing.lg, gap: spacing.xs },
+  bannerTitle: { fontWeight: "800" },
   group: { gap: spacing.sm },
-  groupTitle: { fontWeight: "600" },
+  groupTitle: { fontWeight: "700" },
+  noticesTitle: { fontWeight: "600", letterSpacing: 0.5, marginTop: spacing.sm },
+  tags: { flexDirection: "row", flexWrap: "wrap", gap: spacing.sm, alignItems: "center" },
+  tag: { borderRadius: radius.pill, paddingHorizontal: spacing.sm + 2, paddingVertical: 3 },
+  tagText: { fontWeight: "700", letterSpacing: 0.5 },
+  highTitle: { fontWeight: "700" },
+  bold: { fontWeight: "600" },
   quote: { borderLeftWidth: 3, paddingLeft: spacing.md },
   link: { fontWeight: "600" },
 });

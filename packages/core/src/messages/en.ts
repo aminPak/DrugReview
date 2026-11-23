@@ -31,7 +31,7 @@ export const en = {
     ],
     honestyTitle: "What this version does and doesn't do",
     honesty: [
-      "It finds where official labels mention your other items or your conditions. It doesn't grade how serious something is.",
+      "It finds where official labels mention your other items or your conditions, and puts boxed warnings and contraindications first. It doesn't grade clinical severity.",
       "Labels don't list everything, and supplements have no label of their own. Nothing found doesn't mean safe.",
       "This early version uses US FDA labels, matched by active ingredient. Canadian product names and monographs are coming.",
       "Your list and health profile stay on your device. We don't store them.",
@@ -90,11 +90,29 @@ export const en = {
     noneFoundTitle: "No mentions found in the labels we checked",
     noneFoundBody:
       "This does not mean it's safe. Labels don't list everything, and often name drug groups (like \"NSAIDs\") instead of each medicine. Ask a pharmacist.",
-    forConditionsTitle: "For your health conditions",
+    priority: {
+      high: {
+        title: "Serious warnings",
+        tag: "Serious",
+        body: 'In a boxed warning, a contraindication or a "do not use" instruction, or a possible double dose.',
+      },
+      caution: {
+        title: "Cautions",
+        tag: "Caution",
+        body: "In the label's warnings, precautions or interactions.",
+      },
+    },
+    highAlertTitle: (count: number) =>
+      count === 1 ? "1 serious warning" : `${count} serious warnings`,
+    highAlertBody:
+      "Talk to a pharmacist or doctor before you take these. Don't stop a prescribed medicine on your own.",
+    cautionCount: (count: number) => (count === 1 ? "1 caution" : `${count} cautions`),
+    rankingNote:
+      "Ordered by the label section each finding is in, most serious first. This is not a clinical severity grade.",
+    noticesTitle: "Good to know",
     becauseYouHave: (condition: string) => `Because you have: ${condition}`,
     conditionCaution: (item: string, condition: string) =>
       `The ${item} label warns about ${condition.toLowerCase()}`,
-    betweenItemsTitle: "Between your medicines and supplements",
     labelMention: (labelOf: string, other: string) => `The ${labelOf} label mentions ${other}`,
     viaIngredient: (ingredient: string, item: string) =>
       `This is from the label for ${ingredient}, a medicine form of ${item}.`,
@@ -141,7 +159,7 @@ export const en = {
   notice: {
     title: "Before you start",
     points: [
-      "DrugReview shows what official drug labels say about your medicines, supplements and health conditions. It doesn't grade how serious something is.",
+      "DrugReview shows what official drug labels say about your medicines, supplements and health conditions. Boxed warnings and contraindications come first, but it doesn't grade clinical severity.",
       "This early version uses US FDA labels for each active ingredient. Canadian brand names may not appear yet; search the generic name instead.",
       "If nothing is found, that doesn't mean it's safe. Labels don't cover everything, and supplements have no label of their own.",
       "Your list and health profile are stored only on this device, and sent to our server only to run a check. We don't keep them.",

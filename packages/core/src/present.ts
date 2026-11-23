@@ -4,10 +4,9 @@ import { getCondition } from "./conditions";
 import {
   allPairs,
   type CheckedResult,
-  type ConditionCaution,
   type Finding,
   LABEL_SECTIONS,
-  type PairFinding,
+  type LabelSection,
   type ProfileCondition,
   type UncheckedPair,
 } from "./interactions";
@@ -70,20 +69,37 @@ export function pairLabel(
   return pair.between.map((i) => displayName(items[i]?.name ?? "")).join(" + ");
 }
 
-/** Findings split into the two parts of the results screen, each sorted most serious first. */
-export function splitFindings(findings: readonly Finding[]) {
-  const forConditions = findings.filter(
-    (f): f is ConditionCaution => f.type === "condition_caution",
-  );
-  const betweenItems = findings.filter((f): f is PairFinding => f.type !== "condition_caution");
-  return { forConditions: sortFindings(forConditions), betweenItems: sortFindings(betweenItems) };
+/**
+ * How prominently a finding is shown. This ranks by where the label says it, not by a clinical
+ * severity grade: "high" is a boxed warning, a contraindication, a "do not use" instruction or a
+ * possible double dose; everything else in the label is "caution".
+ */
+export type Priority = "high" | "caution";
+export const PRIORITIES: readonly Priority[] = ["high", "caution"];
+
+const HIGH_PRIORITY_SECTIONS: ReadonlySet<LabelSection> = new Set([
+  "boxed_warning",
+  "contraindications",
+  "do_not_use",
+]);
+
+export function findingPriority(finding: Finding): Priority {
+  if (finding.type === "same_ingredient") return "high";
+  return HIGH_PRIORITY_SECTIONS.has(finding.section) ? "high" : "caution";
 }
 
-/** Condition findings grouped by condition, in profile order. */
-export function groupByCondition(findings: readonly ConditionCaution[], conditionCount: number) {
-  return Array.from({ length: conditionCount }, (_, condition) => ({
-    condition,
-    findings: findings.filter((f) => f.condition === condition),
+/**
+ * Findings grouped by priority, most important group first and most serious section first within
+ * each group. At the same section, findings about the person's conditions come first.
+ */
+export function rankFindings(findings: readonly Finding[]) {
+  const ordered = sortFindings([
+    ...findings.filter((f) => f.type === "condition_caution"),
+    ...findings.filter((f) => f.type !== "condition_caution"),
+  ]);
+  return PRIORITIES.map((priority) => ({
+    priority,
+    findings: ordered.filter((f) => findingPriority(f) === priority),
   })).filter((group) => group.findings.length > 0);
 }
 

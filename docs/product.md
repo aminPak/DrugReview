@@ -84,7 +84,7 @@ The first launch is in **Vancouver, British Columbia**, then the rest of Canada,
 
 The free NLM interaction API was shut down in January 2024, so we don't plan around it.
 
-**v1's limits, stated honestly in the app:** it uses US FDA labels (matched by active ingredient, which is the same in Canadian products), official labels don't list every interaction, often name drug _classes_ ("NSAIDs") rather than each drug, and supplements have no FDA label. v1 finds mentions; it doesn't grade severity. A licensed knowledge base replaces this before launch.
+**v1's limits, stated honestly in the app:** it uses US FDA labels (matched by active ingredient, which is the same in Canadian products), official labels don't list every interaction, often name drug _classes_ ("NSAIDs") rather than each drug, and supplements have no FDA label. v1 finds mentions and puts boxed warnings, contraindications and "do not use" first; it doesn't grade clinical severity. A licensed knowledge base replaces this before launch.
 
 ## Privacy and compliance
 
