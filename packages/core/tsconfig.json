@@ -1,4 +1,8 @@
 {
   "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    // fetch, Response and AbortSignal types for the shared API client.
+    "lib": ["ES2023", "DOM"]
+  },
   "include": ["src"]
 }

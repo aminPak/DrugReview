@@ -4,7 +4,7 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   // Workspace packages ship TypeScript source.
-  transpilePackages: ["@drugreview/core"],
+  transpilePackages: ["@drugreview/core", "@drugreview/ui"],
   turbopack: {
     rules: {
       "*.css": {

@@ -1,0 +1,23 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "web",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["-y", "pnpm@12.21.0", "--filter", "@drugreview/web", "dev"],
+      "port": 3000
+    },
+    {
+      "name": "api",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["-y", "pnpm@12.21.0", "--filter", "@drugreview/api", "dev"],
+      "port": 8787
+    },
+    {
+      "name": "mobile",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["-y", "pnpm@12.21.0", "--filter", "@drugreview/mobile", "start"],
+      "port": 8081
+    }
+  ]
+}

@@ -1,39 +1,114 @@
-import { APP_NAME, APP_TAGLINE, MEDICAL_DISCLAIMER } from "@drugreview/core";
-import { StyleSheet, Text, View } from "react-native";
+import { type CabinetItem, displayName, itemKey } from "@drugreview/core";
+import { radius, spacing } from "@drugreview/ui";
+import { router } from "expo-router";
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function Index() {
+import { AppText, Badge, Button, Card } from "@/components/ui";
+import { m } from "@/lib/app";
+import { useCabinet } from "@/lib/cabinet";
+import { useColors } from "@/lib/theme";
+
+export default function MyListScreen() {
+  const { ready, items, remove, noticeAccepted } = useCabinet();
+  const colors = useColors();
+
+  if (!ready) {
+    return (
+      <View style={styles.center}>
+        <ActivityIndicator color={colors.primary} />
+      </View>
+    );
+  }
+  if (!noticeAccepted) return <Notice />;
+
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
-        <Text style={styles.title}>{APP_NAME}</Text>
-        <Text style={styles.tagline}>{APP_TAGLINE}</Text>
-        <Text style={styles.disclaimer}>{MEDICAL_DISCLAIMER}</Text>
+    <SafeAreaView edges={["bottom"]} style={styles.flex}>
+      <FlatList
+        data={items}
+        keyExtractor={itemKey}
+        contentContainerStyle={styles.list}
+        ListHeaderComponent={
+          <View style={styles.header}>
+            <AppText variant="title">{m.list.title}</AppText>
+            <AppText variant="muted">{m.tagline}</AppText>
+          </View>
+        }
+        ListEmptyComponent={
+          <Card>
+            <AppText variant="heading">{m.list.emptyTitle}</AppText>
+            <AppText variant="muted">{m.list.emptyBody}</AppText>
+          </Card>
+        }
+        renderItem={({ item }) => <Row item={item} onRemove={() => remove(item)} />}
+        ItemSeparatorComponent={() => <View style={{ height: spacing.sm }} />}
+      />
+      <View
+        style={[
+          styles.actions,
+          { borderTopColor: colors.border, backgroundColor: colors.background },
+        ]}
+      >
+        {items.length < 2 && <AppText variant="muted">{m.list.needTwo}</AppText>}
+        <Button label={m.list.add} variant="outline" onPress={() => router.push("/add")} />
+        <Button
+          label={m.list.check}
+          disabled={items.length < 2}
+          onPress={() => router.push("/results")}
+        />
+      </View>
+    </SafeAreaView>
+  );
+}
+
+function Row({ item, onRemove }: { item: CabinetItem; onRemove: () => void }) {
+  const colors = useColors();
+  return (
+    <Card style={styles.row}>
+      <View style={styles.flex}>
+        <AppText variant="heading">{displayName(item.name)}</AppText>
+        <Badge
+          label={item.kind === "medicine" ? m.list.medicine : m.list.supplement}
+          tone={item.kind === "medicine" ? "primary" : "neutral"}
+        />
+      </View>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={`${m.list.remove} ${displayName(item.name)}`}
+        onPress={onRemove}
+        hitSlop={8}
+        style={[styles.remove, { backgroundColor: colors.surfaceMuted }]}
+      >
+        <AppText variant="muted">{m.list.remove}</AppText>
+      </Pressable>
+    </Card>
+  );
+}
+
+function Notice() {
+  const { acceptNotice } = useCabinet();
+  return (
+    <SafeAreaView edges={["bottom"]} style={styles.flex}>
+      <View style={styles.notice}>
+        <AppText variant="title">{m.notice.title}</AppText>
+        {m.notice.points.map((point) => (
+          <Card key={point}>
+            <AppText>{point}</AppText>
+          </Card>
+        ))}
+        <Button label={m.notice.accept} onPress={acceptNotice} />
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
-    flex: 1,
-  },
-  container: {
-    flex: 1,
-    justifyContent: "center",
-    gap: 16,
-    paddingHorizontal: 24,
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: "600",
-  },
-  tagline: {
-    fontSize: 17,
-    lineHeight: 24,
-  },
-  disclaimer: {
-    fontSize: 13,
-    opacity: 0.7,
-  },
+  flex: { flex: 1 },
+  center: { flex: 1, alignItems: "center", justifyContent: "center" },
+  list: { padding: spacing.lg, paddingBottom: spacing.xxl },
+  header: { gap: spacing.xs, marginBottom: spacing.lg },
+  row: { flexDirection: "row", alignItems: "center", gap: spacing.md },
+  remove: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderRadius: radius.sm },
+  actions: { padding: spacing.lg, gap: spacing.sm, borderTopWidth: StyleSheet.hairlineWidth },
+  notice: { flex: 1, padding: spacing.lg, gap: spacing.md, justifyContent: "center" },
 });
