@@ -16,7 +16,7 @@ export class ApiError extends Error {
   }
 }
 
-/** Typed calls to the DrugReview API, shared by the website and the mobile app. */
+/** Typed calls to the Envext Health API, shared by the website and the mobile app. */
 export function createApiClient(baseUrl: string) {
   const base = baseUrl.replace(/\/+$/, "");
 

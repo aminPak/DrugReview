@@ -1,4 +1,4 @@
-# DrugReview (working title)
+# Envext Health (envext.health)
 
 A personal medication and supplement safety companion. Keep one list of everything you take, check it for interactions, and understand your lab results in plain language, in your own language.
 

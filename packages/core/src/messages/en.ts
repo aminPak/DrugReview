@@ -3,11 +3,11 @@
  * To add a language, copy this file, translate the values and register it in `./index.ts`.
  */
 export const en = {
-  appName: "DrugReview",
+  appName: "Envext Health",
   tagline:
     "Check your medicines and supplements against each other and against your health conditions, with the official sources.",
   disclaimer:
-    "DrugReview gives general information. It is not medical advice and does not replace a doctor or pharmacist. Don't start, stop or change anything without talking to one.",
+    "Envext Health gives general information. It is not medical advice and does not replace a doctor or pharmacist. Don't start, stop or change anything without talking to one.",
 
   home: {
     heroTitle: "Is it safe to take this, with what I already take and the conditions I have?",
@@ -188,7 +188,7 @@ export const en = {
   notice: {
     title: "Before you start",
     points: [
-      "DrugReview shows what official drug labels say about your medicines, supplements and health conditions. Boxed warnings and contraindications come first, but it doesn't grade clinical severity.",
+      "Envext Health shows what official drug labels say about your medicines, supplements and health conditions. Boxed warnings and contraindications come first, but it doesn't grade clinical severity.",
       "This version reads US FDA labels for each active ingredient. Search a Canadian product by brand name or DIN and we match it to its ingredients. Canadian product monographs aren't used yet.",
       "If nothing is found, that doesn't mean it's safe. Labels don't cover everything, and supplements have no label of their own.",
       "Your list and health profile are stored only on this device, and sent to our server only to run a check. We don't keep them.",

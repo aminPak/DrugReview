@@ -2,7 +2,7 @@
 
 ## Positioning
 
-DrugReview is a **medication and supplement safety companion**. It answers one question people actually have: _"Is it safe to take this with what I already take?"_
+Envext Health (envext.health) is a **medication and supplement safety companion**. It answers one question people actually have: _"Is it safe to take this with what I already take?"_
 
 It replaces the first prototype's idea of "AI drug review + supplement shop". That combination had three problems:
 

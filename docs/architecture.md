@@ -92,13 +92,14 @@ The website's `/admin` page (not indexed) has an **AI assistant** tab where an a
 
 ## Configuration
 
-| Variable              | App    | Purpose                                                                                   |
-| --------------------- | ------ | ----------------------------------------------------------------------------------------- |
-| `PORT`                | api    | Port to listen on (default 8787)                                                          |
-| `WEB_ORIGINS`         | api    | Browser origins allowed to call the API (default: the website and the mobile web preview) |
-| `OPENFDA_API_KEY`     | api    | Optional. Raises openFDA's limit from 1,000 to 120,000 requests a day                     |
-| `ADMIN_TOKEN`         | api    | Optional. Turns on the admin area; at least 24 characters. Unset, `/admin` doesn't exist  |
-| `DATA_DIR`            | api    | Where admin settings are saved (default `./data`, not committed)                          |
-| `ANTHROPIC_API_KEY`   | api    | Optional. AI key used when none is saved on the admin page (also `OPENAI_API_KEY`)        |
-| `NEXT_PUBLIC_API_URL` | web    | API address (default `http://localhost:8787`)                                             |
-| `EXPO_PUBLIC_API_URL` | mobile | API address. In development it defaults to the computer running Expo                      |
+| Variable               | App    | Purpose                                                                                   |
+| ---------------------- | ------ | ----------------------------------------------------------------------------------------- |
+| `PORT`                 | api    | Port to listen on (default 8787)                                                          |
+| `WEB_ORIGINS`          | api    | Browser origins allowed to call the API (default: the website and the mobile web preview) |
+| `OPENFDA_API_KEY`      | api    | Optional. Raises openFDA's limit from 1,000 to 120,000 requests a day                     |
+| `ADMIN_TOKEN`          | api    | Optional. Turns on the admin area; at least 24 characters. Unset, `/admin` doesn't exist  |
+| `DATA_DIR`             | api    | Where admin settings are saved (default `./data`, not committed)                          |
+| `ANTHROPIC_API_KEY`    | api    | Optional. AI key used when none is saved on the admin page (also `OPENAI_API_KEY`)        |
+| `NEXT_PUBLIC_API_URL`  | web    | API address (default `http://localhost:8787`)                                             |
+| `NEXT_PUBLIC_SITE_URL` | web    | Public address of the website (default `https://envext.health`), used for page metadata   |
+| `EXPO_PUBLIC_API_URL`  | mobile | API address. In development it defaults to the computer running Expo                      |

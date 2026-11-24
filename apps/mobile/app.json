@@ -1,16 +1,18 @@
 {
   "expo": {
-    "name": "DrugReview",
-    "slug": "drugreview",
+    "name": "Envext Health",
+    "slug": "envext-health",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "drugreview",
+    "scheme": "envext",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "health.envext.app"
     },
     "android": {
+      "package": "health.envext.app",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
