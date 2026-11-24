@@ -1,4 +1,10 @@
-import type { Ingredient, LabelSection, ResolvedDrug } from "@drugreview/core";
+import type {
+  Ingredient,
+  LabelSection,
+  ProductSearchResult,
+  ResolvedDrug,
+  ResolvedProduct,
+} from "@drugreview/core";
 
 /** An official drug label, reduced to the sections we search. */
 export interface DrugLabel {
@@ -16,6 +22,10 @@ export interface DrugData {
   resolve(name: string): Promise<ResolvedDrug | null>;
   /** Active ingredients of an RxNorm concept (empty if unknown). */
   ingredients(rxcui: string): Promise<Ingredient[]>;
+  /** Canadian products (Health Canada's Drug Product Database) by brand name or DIN. */
+  searchProducts(query: string, limit: number): Promise<ProductSearchResult[]>;
+  /** A Canadian product by DIN, with its ingredients matched to RxNorm; null if the DIN is unknown. */
+  resolveProduct(din: string): Promise<ResolvedProduct | null>;
   /** Official labels for an ingredient, best first (empty if there are none). */
   labels(ingredientName: string): Promise<DrugLabel[]>;
   /** Labels for an ingredient whose given sections mention any of the terms (empty if none). */

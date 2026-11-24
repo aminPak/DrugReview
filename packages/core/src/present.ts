@@ -203,3 +203,17 @@ export function isSupplementName(name: string): boolean {
     }),
   );
 }
+
+/**
+ * One line that says how much was checked: "6 items, 2 conditions, 15 pairs checked, 3 couldn't be
+ * checked". The last number counts pairs and items (against conditions) that had no label.
+ */
+export function checkSummaryLine(
+  result: CheckedResult,
+  itemCount: number,
+  conditionCount: number,
+  m: Messages,
+): string {
+  const notChecked = result.unchecked.length + result.uncheckedForConditions.length;
+  return m.results.summaryLine(itemCount, conditionCount, result.checkedPairs, notChecked);
+}

@@ -1,10 +1,11 @@
-import { type ClinicalRule, InteractionCheckRequest, RULES } from "@drugreview/core";
+import { type ClinicalRule, Din, InteractionCheckRequest, RULES } from "@drugreview/core";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { secureHeaders } from "hono/secure-headers";
 import { z } from "zod";
 
+import { type AdminOptions, adminRoutes } from "./admin/routes";
 import { checkInteractions } from "./check";
 import { type DrugData, UpstreamError } from "./sources/types";
 
@@ -16,11 +17,19 @@ export interface AppOptions {
   logRequests?: boolean;
   /** Clinically reviewed rules (defaults to `RULES`). Unreviewed rules are never applied. */
   rules?: readonly ClinicalRule[];
+  /** The admin area (AI settings). Left out, it doesn't exist. */
+  admin?: Omit<AdminOptions, "allowedOrigins">;
 }
 
 const SEARCH_LIMIT = 10;
 
-export function createApp({ allowedOrigins, data, logRequests = true, rules = RULES }: AppOptions) {
+export function createApp({
+  allowedOrigins,
+  data,
+  logRequests = true,
+  rules = RULES,
+  admin,
+}: AppOptions) {
   const app = new Hono();
 
   // Log method, path and status only. Query strings and bodies contain drug names, which are
@@ -64,11 +73,27 @@ export function createApp({ allowedOrigins, data, logRequests = true, rules = RU
     },
   );
 
+  app.get(
+    "/v1/products/search",
+    zValidator("query", z.object({ q: z.string().max(100) })),
+    async (c) => {
+      const { q } = c.req.valid("query");
+      return c.json({ results: await data.searchProducts(q, SEARCH_LIMIT) });
+    },
+  );
+
+  app.get("/v1/products/resolve", zValidator("query", z.object({ din: Din })), async (c) => {
+    const product = await data.resolveProduct(c.req.valid("query").din);
+    return product ? c.json(product) : c.json({ error: "not_found" }, 404);
+  });
+
   app.post("/v1/interactions/check", zValidator("json", InteractionCheckRequest), async (c) => {
     const { items, profile } = c.req.valid("json");
     const result = await checkInteractions(items, data, profile, rules);
     return c.json(result, result.status === "checked" ? 200 : 503);
   });
+
+  if (admin) app.route("/admin", adminRoutes({ ...admin, allowedOrigins }));
 
   return app;
 }

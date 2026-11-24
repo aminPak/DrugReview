@@ -38,6 +38,11 @@ const RXNORM_SOURCE: Source = {
   url: "https://www.nlm.nih.gov/research/umls/rxnorm/",
 };
 
+const DPD_SOURCE: Source = {
+  name: "Drug Product Database, Health Canada",
+  url: "https://health-products.canada.ca/dpd-bdpp/",
+};
+
 interface ItemLabel {
   label: DrugLabel;
   /** For supplements: the medicine form the label belongs to (e.g. "magnesium sulfate"). */
@@ -110,11 +115,15 @@ async function runCheck(
   rules: readonly ClinicalRule[],
 ): Promise<InteractionCheckResult> {
   // 1. What each item is made of, and which labels to read for it.
-  const ingredientLists = await mapLimit(items, CONCURRENCY, async (item) =>
-    item.kind === "medicine"
-      ? (await data.ingredients(item.rxcui)).slice(0, MAX_INGREDIENTS_PER_ITEM)
-      : [],
-  );
+  const ingredientLists = await mapLimit(items, CONCURRENCY, async (item) => {
+    if (item.kind !== "medicine") return [];
+    // A Canadian product is read from the DPD each time, never from what the device sent.
+    // A DIN the DPD no longer knows has no ingredients, so it is listed as not checked.
+    const ingredients = item.din
+      ? ((await data.resolveProduct(item.din))?.ingredients ?? [])
+      : await data.ingredients(item.rxcui ?? "");
+    return ingredients.slice(0, MAX_INGREDIENTS_PER_ITEM);
+  });
   const labelNamesPerItem = items.map((item, index) => {
     if (item.kind === "medicine") return (ingredientLists[index] ?? []).map((i) => i.name);
     const supplement = getSupplement(item.supplementId);
@@ -174,7 +183,10 @@ async function runCheck(
       findings.push({ type: "same_ingredient", between: [i, j], ingredient: ingredient.name });
     }
 
-    if (a.labels.length === 0 && b.labels.length === 0) {
+    // A medicine we can't identify has no name to look for in the other item's label, so that pair
+    // can't be checked either, even if the other item has a label.
+    const unidentified = a.terms.length === 0 || b.terms.length === 0;
+    if (unidentified || (a.labels.length === 0 && b.labels.length === 0)) {
       const bothSupplements = a.item.kind === "supplement" && b.item.kind === "supplement";
       unchecked.push({
         between: [i, j],
@@ -287,7 +299,12 @@ async function runCheck(
     unchecked,
     uncheckedForConditions,
     checkedPairs,
-    sources: [RXNORM_SOURCE, ...[...usedLabels.values()].map(sourceFor), ...ruleSources.values()],
+    sources: [
+      RXNORM_SOURCE,
+      ...(items.some((item) => item.kind === "medicine" && item.din) ? [DPD_SOURCE] : []),
+      ...[...usedLabels.values()].map(sourceFor),
+      ...ruleSources.values(),
+    ],
     checkedAt: new Date().toISOString(),
   };
 }

@@ -1,0 +1,21 @@
+# Keep the Docker build small: the API needs the workspace config, its own code and
+# packages/core. Other apps only need their package.json so the lockfile still matches.
+**/node_modules
+**/dist
+**/.next
+**/.expo
+**/.turbo
+.git
+.vs
+.vscode
+.claude
+docs
+**/*.log
+**/.env
+**/.env.*
+apps/api/data
+
+apps/web/*
+!apps/web/package.json
+apps/mobile/*
+!apps/mobile/package.json

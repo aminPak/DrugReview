@@ -81,6 +81,26 @@ function fakeData(overrides: Partial<DrugData> = {}): DrugData {
         ? { rxcui: "11289", name: "warfarin", ingredients: ingredients["11289"]! }
         : null,
     ingredients: async (rxcui) => ingredients[rxcui] ?? [],
+    searchProducts: async (q) =>
+      q.toLowerCase().startsWith("tylenol")
+        ? [
+            {
+              din: "00559393",
+              name: "TYLENOL REGULAR STRENGTH",
+              company: "KENVUE CANADA INC.",
+              ingredients: [{ name: "acetaminophen", strength: "325 MG" }],
+            },
+          ]
+        : [],
+    resolveProduct: async (din) =>
+      din === "00559393"
+        ? {
+            din,
+            name: "TYLENOL REGULAR STRENGTH",
+            ingredients: ingredients["161"]!,
+            unmatched: [],
+          }
+        : null,
     labels: async (name) => (labels[name] ? [labels[name]] : []),
     labelsMentioning: async (name, terms, sections) =>
       [...extraLabels, ...(labels[name] ? [labels[name]] : [])].filter(
@@ -136,6 +156,23 @@ describe("health and search", () => {
     expect((await appWith().request("/v1/drugs/resolve?name=nope")).status).toBe(404);
   });
 
+  it("searches Canadian products and resolves one by DIN", async () => {
+    const found = await appWith().request("/v1/products/search?q=tylenol");
+    expect(await found.json()).toEqual({
+      results: [
+        {
+          din: "00559393",
+          name: "TYLENOL REGULAR STRENGTH",
+          company: "KENVUE CANADA INC.",
+          ingredients: [{ name: "acetaminophen", strength: "325 MG" }],
+        },
+      ],
+    });
+    expect((await appWith().request("/v1/products/resolve?din=00559393")).status).toBe(200);
+    expect((await appWith().request("/v1/products/resolve?din=00000000")).status).toBe(404);
+    expect((await appWith().request("/v1/products/resolve?din=abc")).status).toBe(400);
+  });
+
   it("allows the website's origin", async () => {
     const res = await appWith().request("/v1/drugs/search?q=wa", {
       headers: { Origin: "http://localhost:3000" },
@@ -180,6 +217,34 @@ describe("interaction check", () => {
     if (result.status !== "checked") throw new Error("expected checked");
     // Warfarin's label names aspirin; aspirin's label only says "blood thinner", so no match there.
     expect(result.findings.map((f) => f.type === "label_mention" && f.labelOf)).toEqual([0]);
+  });
+
+  it("checks a Canadian product through its ingredients and cites the DPD", async () => {
+    const tylenol = { kind: "medicine", name: "Tylenol Regular Strength", din: "00559393" };
+    const { result } = await check([
+      { kind: "medicine", name: "Acetaminophen", rxcui: "161" },
+      tylenol,
+    ]);
+    if (result.status !== "checked") throw new Error("expected checked");
+    expect(result.findings).toEqual([
+      { type: "same_ingredient", between: [0, 1], ingredient: "acetaminophen" },
+    ]);
+    expect(result.sources.map((s) => s.name)).toContain("Drug Product Database, Health Canada");
+  });
+
+  it("lists a DIN the database no longer knows as not checked, never as clear", async () => {
+    const { result } = await check([warfarin, { kind: "medicine", name: "Gone", din: "99999999" }]);
+    if (result.status !== "checked") throw new Error("expected checked");
+    expect(result.unchecked).toEqual([{ between: [0, 1], reason: "label_not_found" }]);
+  });
+
+  it("rejects a medicine with neither an RxNorm ID nor a DIN", async () => {
+    const res = await appWith().request("/v1/interactions/check", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ items: [warfarin, { kind: "medicine", name: "Mystery" }] }),
+    });
+    expect(res.status).toBe(400);
   });
 
   it("flags two products with the same active ingredient", async () => {

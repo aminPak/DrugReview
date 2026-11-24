@@ -1,5 +1,6 @@
 import {
   type CabinetItem,
+  checkSummaryLine,
   conditionName,
   displayName,
   type Finding,
@@ -73,6 +74,9 @@ export function Results({ snapshot, onRetry }: { snapshot: CheckSnapshot; onRetr
 
   return (
     <section aria-live="polite" className="space-y-6">
+      <p className="text-sm text-muted-foreground">
+        {checkSummaryLine(result, items.length, conditions.length, m)}
+      </p>
       <Summary highCount={highCount} cautionCount={cautionCount} total={total} />
 
       {groups.map((group) => (

@@ -63,13 +63,32 @@ user's list  ──POST /v1/interactions/check──▶
                  + pairs that couldn't be checked
 ```
 
-- **Why US labels for a Canadian launch:** Canadian product monographs are PDFs with no free structured API, while the active ingredients are the same. v1.1 adds Canadian product search (Health Canada's Drug Product Database and Natural Health Products Database) and maps each product to its ingredients, which then use this same check.
+- **Why US labels for a Canadian launch:** Canadian product monographs are PDFs with no free structured API, while the active ingredients are the same. v1.1 adds Canadian product search from Health Canada's Drug Product Database ([below](#canadian-products-v11)), which maps each product to its ingredients, and these then use this same check. Natural health products follow.
 - **Health conditions** are checked the same way, against the label sections that matter (boxed warning, contraindications, warnings…). If the labels already read don't mention a condition, the API asks openFDA for any label of that ingredient that does. Details: [safety-checks.md](safety-checks.md).
 - **Matching is plain text search**, not AI: the other item's ingredient name, or a supplement's known names (for example "St. John's wort", "Hypericum"). It's deterministic and every finding quotes the sentence it came from.
 - **Supplements** come from a curated list of common supplement ingredients and their alternative names (`packages/core/src/supplements.ts`). A supplement–supplement pair has no FDA label, so it's reported as "couldn't check".
 - **If a source can't be reached**, the API returns `unavailable` instead of a partial answer.
 - **Caching:** labels and ingredient lookups are cached in memory for 24 hours. The RxNorm name list used for autocomplete is downloaded once and cached.
 - **Privacy:** the API doesn't store or log item names. The list lives on the user's device (mobile) or in the browser (web).
+
+## Canadian products (v1.1)
+
+`apps/api/src/sources/dpd.ts` reads Health Canada's **Drug Product Database** API (no key needed). A search by brand name or DIN lists matching products, keeps human medicines whose status is "Marketed" (the API also returns cancelled products, and a status needs one lookup each), and adds each product's active ingredients and strengths. An 8-digit DIN is looked up exactly, whatever its status. Each ingredient is then matched to an RxNorm ingredient, so the label check is the same as for a generic name.
+
+- A list item from the DPD stores only the name and DIN. The API re-reads the product at each check, so the device never decides which ingredients are checked. A DIN the database no longer knows has no ingredients, so its pairs are listed as "not checked".
+- Ingredients RxNorm can't match are returned as `unmatched` when the item is added, and the apps say they aren't checked.
+- Results are cached for 24 hours. The DPD is cited as a source on any result that uses it.
+- The natural health products database (LNHPD) has no name search in its API, so supplements keep the curated list until an offline index is built (see [roadmap.md](roadmap.md)).
+
+## Admin area and AI provider settings
+
+The website's `/admin` page (not indexed) has an **AI assistant** tab where an admin picks a provider (Anthropic, OpenAI, or any OpenAI-compatible service with its own address), the model and a key, and can test the connection. It records the connection for the v2 explanation layer; nothing calls the provider yet.
+
+- **Access:** one secret, `ADMIN_TOKEN`, sent as a bearer token. Shorter than 24 characters or unset, the whole `/admin` API answers 404, so it doesn't exist. The page keeps the token in the browser tab's session only. There is no rate limiting yet, so use a long random token and keep the API behind your host's protections.
+- **The key is write-only.** The API never returns it, only where it comes from (`saved` or `env`) and its last four characters. A saved key is encrypted (AES-256-GCM, key derived from `ADMIN_TOKEN`) in `DATA_DIR/ai-settings.json`, which isn't committed. If `ADMIN_TOKEN` changes, the saved key can't be read and must be entered again. A key from `ANTHROPIC_API_KEY` or `OPENAI_API_KEY` is used when none is saved, and is the better choice in production.
+- **Test connection** sends one tiny request (8 tokens, no health data) to check the key, model and address. Another provider's address must be https, or http on localhost.
+- Changing the provider drops the saved key, since it belongs to the old one.
+- Code: `apps/api/src/admin/` (store, test, routes) and `apps/web/src/components/admin/`. Shared types are in `packages/core/src/admin.ts`.
 
 ## Configuration
 
@@ -78,5 +97,8 @@ user's list  ──POST /v1/interactions/check──▶
 | `PORT`                | api    | Port to listen on (default 8787)                                                          |
 | `WEB_ORIGINS`         | api    | Browser origins allowed to call the API (default: the website and the mobile web preview) |
 | `OPENFDA_API_KEY`     | api    | Optional. Raises openFDA's limit from 1,000 to 120,000 requests a day                     |
+| `ADMIN_TOKEN`         | api    | Optional. Turns on the admin area; at least 24 characters. Unset, `/admin` doesn't exist  |
+| `DATA_DIR`            | api    | Where admin settings are saved (default `./data`, not committed)                          |
+| `ANTHROPIC_API_KEY`   | api    | Optional. AI key used when none is saved on the admin page (also `OPENAI_API_KEY`)        |
 | `NEXT_PUBLIC_API_URL` | web    | API address (default `http://localhost:8787`)                                             |
 | `EXPO_PUBLIC_API_URL` | mobile | API address. In development it defaults to the computer running Expo                      |

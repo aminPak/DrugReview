@@ -7,6 +7,7 @@ import {
 } from "@drugreview/core";
 import { radius, spacing } from "@drugreview/ui";
 import { router } from "expo-router";
+import { useEffect, useRef, useState } from "react";
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -17,8 +18,25 @@ import { useColors } from "@/lib/theme";
 
 export default function MyListScreen() {
   const { ready, items, remove, noticeAccepted, conditions } = useCabinet();
+  const { add } = useCabinet();
   const checkable = canRunCheck(items.length, conditions.length);
   const colors = useColors();
+  const [removed, setRemoved] = useState<CabinetItem | null>(null);
+  const undoTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => void (undoTimer.current && clearTimeout(undoTimer.current)), []);
+
+  function removeWithUndo(item: CabinetItem) {
+    remove(item);
+    setRemoved(item);
+    if (undoTimer.current) clearTimeout(undoTimer.current);
+    undoTimer.current = setTimeout(() => setRemoved(null), 6000);
+  }
+
+  function undoRemove() {
+    if (removed) add(removed);
+    setRemoved(null);
+  }
 
   if (!ready) {
     return (
@@ -46,9 +64,19 @@ export default function MyListScreen() {
           <Card>
             <AppText variant="heading">{m.list.emptyTitle}</AppText>
             <AppText variant="muted">{m.list.emptyBody}</AppText>
+            {conditions.length === 0 && (
+              <>
+                <AppText variant="muted">{m.list.profilePrompt}</AppText>
+                <Button
+                  label={m.list.profilePromptAction}
+                  variant="outline"
+                  onPress={() => router.push("/profile")}
+                />
+              </>
+            )}
           </Card>
         }
-        renderItem={({ item }) => <Row item={item} onRemove={() => remove(item)} />}
+        renderItem={({ item }) => <Row item={item} onRemove={() => removeWithUndo(item)} />}
         ItemSeparatorComponent={() => <View style={{ height: spacing.sm }} />}
       />
       <View
@@ -57,6 +85,17 @@ export default function MyListScreen() {
           { borderTopColor: colors.border, backgroundColor: colors.background },
         ]}
       >
+        {removed && (
+          <View
+            style={[styles.undo, { backgroundColor: colors.surfaceMuted }]}
+            accessibilityLiveRegion="polite"
+          >
+            <AppText style={styles.flex}>{m.list.removed(displayName(removed.name))}</AppText>
+            <Pressable accessibilityRole="button" onPress={undoRemove} hitSlop={8}>
+              <AppText color={colors.primary}>{m.list.undo}</AppText>
+            </Pressable>
+          </View>
+        )}
         {!checkable && <AppText variant="muted">{m.list.needMore}</AppText>}
         <Button label={m.list.add} variant="outline" onPress={() => router.push("/add")} />
         <Button
@@ -153,6 +192,13 @@ const styles = StyleSheet.create({
   profileHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: spacing.xs },
   row: { flexDirection: "row", alignItems: "center", gap: spacing.md },
+  undo: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: spacing.md,
+    padding: spacing.md,
+    borderRadius: radius.sm,
+  },
   remove: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderRadius: radius.sm },
   actions: { padding: spacing.lg, gap: spacing.sm, borderTopWidth: StyleSheet.hairlineWidth },
   notice: { flex: 1, padding: spacing.lg, gap: spacing.md, justifyContent: "center" },

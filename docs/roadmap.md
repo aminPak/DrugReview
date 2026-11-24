@@ -16,19 +16,17 @@ The first launch is in **Vancouver, Canada** (see [product.md](product.md#launch
 
 ## v1.1: Canadian data and journey fixes (before the Vancouver launch)
 
-**Canadian data**
+**Built (2026-11-23)**
 
-- Search Canadian products by brand name or DIN with Health Canada's **Drug Product Database**, mapping each product's active ingredients to RxNorm. Keep each product's strengths; v1.2 and v2 use them.
-- Search licensed supplements by name or NPN with the **Licensed Natural Health Products Database**, mapping medicinal ingredients to the supplement list.
-- French wording.
+- **Canadian medicine search** by brand name or DIN, from Health Canada's **Drug Product Database** (live API, marketed human products only). Each product's active ingredients are matched to RxNorm, then use the same label check. A DIN item is stored as the DIN only and re-read from the database at each check; the strengths are kept in search results for v1.2 and v2. Ingredients RxNorm doesn't recognise are named when the item is added and aren't checked.
+- **Journey fixes** (details in [user-journey.md](user-journey.md#gaps-and-when-they-are-fixed)): the web `/check` shows the key caveats with an accept-once step; undo after removing an item (both platforms); the mobile add screen stays open with a **Done** button, and the web search says "Added …"; plain "couldn't find that medicine" wording that suggests the generic name or the DIN; the empty list prompts for conditions; the results start with a "6 items, 2 conditions, 15 pairs checked, 3 couldn't be checked" line.
+- **Admin area** on the website (`/admin`, behind `ADMIN_TOKEN` on the API) with an **AI assistant** tab: choose Anthropic, OpenAI or any OpenAI-compatible service, set the model, add a key and test the connection. The key is write-only and stored encrypted. It only records the connection: the explanations themselves are v2 and aren't in the apps yet. See [architecture.md](architecture.md#admin-area-and-ai-provider-settings).
+- A medicine that can't be identified (for example a DIN the database no longer lists) makes its pairs "not checked", even when the other item has a label.
 
-**Journey fixes** (details and reasons in [user-journey.md](user-journey.md#gaps-and-when-they-are-fixed))
+**Still to do in v1.1**
 
-- Web: show the key caveats on `/check` with an accept-once step, as mobile does.
-- Undo after removing an item, on both platforms.
-- Keep the add screen open for several items, with a **Done** button.
-- Plain "couldn't find that medicine" wording that suggests the generic name, until DPD search ships.
-- Prompt for the health profile in the empty state; add a "what was checked" summary line to the results.
+- **Licensed supplements** by name or NPN with the **Licensed Natural Health Products Database**. Its API can only look up a product by ID or list every product page by page, with no name search, so this needs an offline index built from a download and refreshed on a schedule, not a live search.
+- French wording (needs the language plumbing in both apps and clinical review of the text).
 - Run a short usability test (5 to 8 people, including a caregiver and someone on 5+ medicines) before the launch checklist is signed off.
 
 ## v1.2: richer list and profile (on the device)
@@ -44,7 +42,7 @@ No accounts and no new data sources. Everything stays on the device, optional, a
 ## v2: accounts and explanations
 
 - Supabase in the Canada Central region: sign-in (email code, Sign in with Apple/Google), the list and profile synced across devices and between mobile and web. Consent is recorded server-side (BC PIPA), with export and delete.
-- Claude API: plain-language, personal explanations of each finding ("because you have…"), grounded in the quoted label text, in the user's language; turning free-text conditions into profile conditions for the person to confirm.
+- Claude API: plain-language, personal explanations of each finding ("because you have…"), grounded in the quoted label text, in the user's language; turning free-text conditions into profile conditions for the person to confirm. The provider, model and key are already set on the admin page (v1.1); this builds the feature that uses them.
 - **Food and lifestyle** in the profile (grapefruit, alcohol, vitamin K intake, tyramine-rich food, caffeine, smoking) and the matching checks.
 - **Total daily amount** of a shared ingredient, using the per-item dose and frequency from v1.2 and the DPD strengths from v1.1, shown next to what the label says. Display only, for the pharmacist; needs regulatory review first because it is dose-related.
 - Barcode and photo scanning of labels (Canadian DIN/NPN barcodes) that fills in the item and its strength.
