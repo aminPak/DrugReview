@@ -25,3 +25,6 @@ Thumbs.db
 
 # Logs
 *.log
+
+# Admin settings saved by the API (AI provider, encrypted key)
+apps/api/data/

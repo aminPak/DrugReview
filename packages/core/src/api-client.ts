@@ -1,5 +1,11 @@
 import type { CabinetItem } from "./cabinet";
-import { DrugSearchResponse, ResolvedDrug } from "./drugs";
+import {
+  DrugSearchResponse,
+  type ProductSearchResult,
+  ProductSearchResponse,
+  ResolvedDrug,
+  ResolvedProduct,
+} from "./drugs";
 import { type HealthProfile, InteractionCheckResult } from "./interactions";
 
 /** The API couldn't be reached or answered with something unexpected. */
@@ -35,6 +41,21 @@ export function createApiClient(baseUrl: string) {
       if (res.status === 404) return null;
       if (!res.ok) throw new ApiError(`resolve failed: ${res.status}`);
       return ResolvedDrug.parse(await res.json());
+    },
+
+    /** Canadian products from Health Canada's Drug Product Database, by brand name or DIN. */
+    async searchProducts(query: string, signal?: AbortSignal): Promise<ProductSearchResult[]> {
+      const res = await request(`/v1/products/search?q=${encodeURIComponent(query)}`, { signal });
+      if (!res.ok) throw new ApiError(`product search failed: ${res.status}`);
+      return ProductSearchResponse.parse(await res.json()).results;
+    },
+
+    /** A Canadian product with its ingredients matched to RxNorm, or null if the DIN is unknown. */
+    async resolveProduct(din: string): Promise<ResolvedProduct | null> {
+      const res = await request(`/v1/products/resolve?din=${encodeURIComponent(din)}`);
+      if (res.status === 404) return null;
+      if (!res.ok) throw new ApiError(`product resolve failed: ${res.status}`);
+      return ResolvedProduct.parse(await res.json());
     },
 
     /** Never throws for a check that couldn't run: that comes back as status "unavailable". */

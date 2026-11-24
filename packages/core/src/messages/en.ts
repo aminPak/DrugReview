@@ -33,7 +33,7 @@ export const en = {
     honesty: [
       "It finds where official labels mention your other items or your conditions, and puts boxed warnings and contraindications first. It doesn't grade clinical severity.",
       "Labels don't list everything, and supplements have no label of their own. Nothing found doesn't mean safe.",
-      "This early version uses US FDA labels, matched by active ingredient. Canadian product names and monographs are coming.",
+      "This version reads US FDA labels, matched by active ingredient. You can search Canadian products by brand name or DIN, but Canadian product monographs aren't used yet.",
       "Your list and health profile stay on your device. We don't store them.",
     ],
   },
@@ -44,9 +44,13 @@ export const en = {
     emptyBody: "Add the medicines and supplements you take, then check them.",
     add: "Add medicine or supplement",
     remove: "Remove",
-    removeConfirm: (name: string) => `Remove ${name} from your list?`,
+    removed: (name: string) => `Removed ${name}`,
+    undo: "Undo",
     check: "Run safety check",
     needMore: "Add two items, or one item and a health condition, to run a check.",
+    profilePrompt:
+      "Add your health conditions too. Every item is also checked against them, and that is where many warnings are.",
+    profilePromptAction: "Add conditions",
     medicine: "Medicine",
     supplement: "Supplement",
     alreadyAdded: "Already added",
@@ -70,19 +74,33 @@ export const en = {
 
   search: {
     title: "Add to my list",
-    placeholder: "Search, e.g. warfarin or ginkgo",
-    medicines: "Medicines",
+    placeholder: "Brand, generic name or DIN, e.g. Advil, warfarin or ginkgo",
+    canadianProducts: "Canadian products",
+    medicines: "Generic medicines",
     supplements: "Supplements",
     conditions: "Conditions",
     noResults: "Nothing found. Check the spelling, or try the generic name.",
     typeMore: "Type at least 2 letters.",
-    couldNotAdd: "We couldn't find that medicine in RxNorm. Try another name.",
+    couldNotAdd:
+      "We couldn't find that medicine. Try its generic name (for example ibuprofen instead of Advil) or the DIN printed on the box.",
+    unmatched: (ingredients: string) =>
+      `We couldn't match ${ingredients} to our drug list, so it isn't included in the check.`,
+    added: (name: string) => `Added ${name}`,
+    done: "Done",
+    din: (din: string) => `DIN ${din}`,
     offline: "We couldn't reach the server. Check your connection and try again.",
   },
 
   results: {
     title: "Safety check",
     checking: "Checking official labels…",
+    summaryLine: (items: number, conditions: number, pairs: number, notChecked: number) =>
+      [
+        items === 1 ? "1 item" : `${items} items`,
+        conditions === 1 ? "1 condition" : `${conditions} conditions`,
+        pairs === 1 ? "1 pair checked" : `${pairs} pairs checked`,
+        notChecked === 1 ? "1 couldn't be checked" : `${notChecked} couldn't be checked`,
+      ].join(", "),
     foundTitle: (count: number) =>
       count === 1
         ? "1 thing to discuss with your pharmacist"
@@ -171,7 +189,7 @@ export const en = {
     title: "Before you start",
     points: [
       "DrugReview shows what official drug labels say about your medicines, supplements and health conditions. Boxed warnings and contraindications come first, but it doesn't grade clinical severity.",
-      "This early version uses US FDA labels for each active ingredient. Canadian brand names may not appear yet; search the generic name instead.",
+      "This version reads US FDA labels for each active ingredient. Search a Canadian product by brand name or DIN and we match it to its ingredients. Canadian product monographs aren't used yet.",
       "If nothing is found, that doesn't mean it's safe. Labels don't cover everything, and supplements have no label of their own.",
       "Your list and health profile are stored only on this device, and sent to our server only to run a check. We don't keep them.",
       "This is not medical advice. Talk to a doctor or pharmacist before changing anything.",

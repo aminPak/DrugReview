@@ -99,16 +99,16 @@ The first launch is in **Vancouver, British Columbia**, then the rest of Canada,
 
 ## Clinical data
 
-| Source                                                          | Cost     | Used for                                               | Status                |
-| --------------------------------------------------------------- | -------- | ------------------------------------------------------ | --------------------- |
-| Health Canada Drug Product Database (DPD)                       | Free     | Canadian brand names, DINs, active ingredients         | Next (before launch)  |
-| Health Canada Licensed Natural Health Products Database (LNHPD) | Free     | Canadian supplements (NPNs) and their ingredients      | Next (before launch)  |
-| RxNorm (NLM RxNav)                                              | Free     | Ingredient names and IDs, autocomplete                 | Used in v1            |
-| openFDA drug labels (same text as DailyMed)                     | Free     | US label sections that mention other drugs/supplements | Used in v1            |
-| NIH Dietary Supplement Label Database (DSLD)                    | Free     | US supplement products                                 | For a US launch       |
-| DrugBank, First Databank or Medi-Span                           | Licensed | Graded drug–drug interactions with severity            | Needed before launch  |
-| Natural Medicines (TRC)                                         | Licensed | Graded supplement interactions                         | Needed before launch  |
-| LOINC                                                           | Free     | Coding lab results                                     | Planned (lab results) |
+| Source                                                          | Cost     | Used for                                               | Status                                                   |
+| --------------------------------------------------------------- | -------- | ------------------------------------------------------ | -------------------------------------------------------- |
+| Health Canada Drug Product Database (DPD)                       | Free     | Canadian brand names, DINs, active ingredients         | Used in v1.1                                             |
+| Health Canada Licensed Natural Health Products Database (LNHPD) | Free     | Canadian supplements (NPNs) and their ingredients      | Next: needs an offline index (no name search in its API) |
+| RxNorm (NLM RxNav)                                              | Free     | Ingredient names and IDs, autocomplete                 | Used in v1                                               |
+| openFDA drug labels (same text as DailyMed)                     | Free     | US label sections that mention other drugs/supplements | Used in v1                                               |
+| NIH Dietary Supplement Label Database (DSLD)                    | Free     | US supplement products                                 | For a US launch                                          |
+| DrugBank, First Databank or Medi-Span                           | Licensed | Graded drug–drug interactions with severity            | Needed before launch                                     |
+| Natural Medicines (TRC)                                         | Licensed | Graded supplement interactions                         | Needed before launch                                     |
+| LOINC                                                           | Free     | Coding lab results                                     | Planned (lab results)                                    |
 
 The free NLM interaction API was shut down in January 2024, so we don't plan around it.
 

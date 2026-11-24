@@ -1,5 +1,6 @@
 import {
   type CabinetItem,
+  checkSummaryLine,
   conditionName,
   displayName,
   type Finding,
@@ -85,6 +86,9 @@ export default function ResultsScreen() {
 
   return (
     <ScrollView contentContainerStyle={styles.content}>
+      <AppText variant="small">
+        {checkSummaryLine(result, state.items.length, state.conditions.length, m)}
+      </AppText>
       {total === 0 ? (
         <View style={styles.summary}>
           <AppText variant="title">{m.results.noneFoundTitle}</AppText>
