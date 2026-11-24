@@ -94,12 +94,12 @@ export const en = {
       high: {
         title: "Serious warnings",
         tag: "Serious",
-        body: 'In a boxed warning, a contraindication or a "do not use" instruction, or a possible double dose.',
+        body: 'In a boxed warning, a contraindication or a "do not use" instruction, a possible double dose, or rated serious by a reviewed rule.',
       },
       caution: {
         title: "Cautions",
         tag: "Caution",
-        body: "In the label's warnings, precautions or interactions.",
+        body: "In the label's warnings, precautions or interactions, or from a reviewed rule.",
       },
     },
     highAlertTitle: (count: number) =>
@@ -108,12 +108,21 @@ export const en = {
       "Talk to a pharmacist or doctor before you take these. Don't stop a prescribed medicine on your own.",
     cautionCount: (count: number) => (count === 1 ? "1 caution" : `${count} cautions`),
     rankingNote:
-      "Ordered by the label section each finding is in, most serious first. This is not a clinical severity grade.",
+      "Ordered by the label section each finding is in, most serious first, with your conditions first. This is not a clinical severity grade.",
     noticesTitle: "Good to know",
     becauseYouHave: (condition: string) => `Because you have: ${condition}`,
     conditionCaution: (item: string, condition: string) =>
       `The ${item} label warns about ${condition.toLowerCase()}`,
     labelMention: (labelOf: string, other: string) => `The ${labelOf} label mentions ${other}`,
+    reviewedRuleTag: "From a reviewed rule",
+    reviewedRuleTitle: (item: string, condition: string) =>
+      `A reviewed rule covers ${item} with ${condition.toLowerCase()}`,
+    reviewedRuleBody:
+      "This isn't from a drug label. It's a rule checked by a clinical reviewer, based on the published sources below.",
+    ruleAppliesTo: (what: string) => `Applies to: ${what}`,
+    ruleReviewed: (by: string, date: string, id: string, version: number) =>
+      `Reviewed by ${by} on ${date} · rule ${id}, version ${version}`,
+    ruleSourcesTitle: "Sources for this rule",
     viaIngredient: (ingredient: string, item: string) =>
       `This is from the label for ${ingredient}, a medicine form of ${item}.`,
     sameIngredient: (ingredient: string) => `Both contain ${ingredient}`,
@@ -122,6 +131,8 @@ export const en = {
     inSection: (section: string) => `In "${section}"`,
     openLabel: "Open the official label",
     quietConditionsTitle: "Checked against your conditions, nothing found",
+    quietConditionsBody:
+      "Neither the labels we checked nor our reviewed rules mention these. That doesn't mean they're safe.",
     quietTitle: "Checked, no mention found",
     quietBody:
       "The labels we checked don't mention these. That doesn't mean they're safe together.",

@@ -22,6 +22,12 @@ export function splitSentences(text: string): string[] {
 export interface MatchOptions {
   /** Ignore a match when the next word(s) start with one of these (e.g. "channel"). */
   ignoreWhenFollowedBy?: readonly string[];
+  /**
+   * Regular expression sources matched alongside the terms, for wording a fixed phrase can't
+   * cover, such as a mineral at the end of a list ("antacids containing aluminum, calcium, or
+   * magnesium"). Matched case-insensitively against normalized text, as whole words.
+   */
+  patterns?: readonly string[];
 }
 
 const MAX_EXCERPT = 320;
@@ -52,11 +58,12 @@ export function findMention(
   options: MatchOptions = {},
 ): string | null {
   const usable = terms.map((t) => t.trim().toLowerCase()).filter((t) => t.length >= 3);
-  if (usable.length === 0) return null;
-  const pattern = new RegExp(
-    `(?<![a-z0-9])(?:${usable.map((t) => escapeRegExp(normalizeText(t))).join("|")})(?![a-z0-9])`,
-    "gi",
-  );
+  const alternatives = [
+    ...usable.map((t) => escapeRegExp(normalizeText(t))),
+    ...(options.patterns ?? []),
+  ];
+  if (alternatives.length === 0) return null;
+  const pattern = new RegExp(`(?<![a-z0-9])(?:${alternatives.join("|")})(?![a-z0-9])`, "gi");
   const ignore = (options.ignoreWhenFollowedBy ?? []).map((w) => w.toLowerCase());
 
   const sentences = splitSentences(text);

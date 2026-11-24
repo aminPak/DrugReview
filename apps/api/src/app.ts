@@ -1,4 +1,4 @@
-import { InteractionCheckRequest } from "@drugreview/core";
+import { type ClinicalRule, InteractionCheckRequest, RULES } from "@drugreview/core";
 import { zValidator } from "@hono/zod-validator";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
@@ -14,11 +14,13 @@ export interface AppOptions {
   data: DrugData;
   /** Set to false to silence request logs (tests). */
   logRequests?: boolean;
+  /** Clinically reviewed rules (defaults to `RULES`). Unreviewed rules are never applied. */
+  rules?: readonly ClinicalRule[];
 }
 
 const SEARCH_LIMIT = 10;
 
-export function createApp({ allowedOrigins, data, logRequests = true }: AppOptions) {
+export function createApp({ allowedOrigins, data, logRequests = true, rules = RULES }: AppOptions) {
   const app = new Hono();
 
   // Log method, path and status only. Query strings and bodies contain drug names, which are
@@ -64,7 +66,7 @@ export function createApp({ allowedOrigins, data, logRequests = true }: AppOptio
 
   app.post("/v1/interactions/check", zValidator("json", InteractionCheckRequest), async (c) => {
     const { items, profile } = c.req.valid("json");
-    const result = await checkInteractions(items, data, profile);
+    const result = await checkInteractions(items, data, profile, rules);
     return c.json(result, result.status === "checked" ? 200 : 503);
   });
 

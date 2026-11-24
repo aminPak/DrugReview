@@ -1,3 +1,5 @@
+import type { MatchOptions } from "./matching";
+
 /**
  * Common supplement ingredients and the other names they appear under in drug labels.
  *
@@ -14,6 +16,8 @@ export interface Supplement {
    * word appears everywhere (lab values, disease names), so only supplement-specific phrases count.
    */
   searchTerms?: readonly string[];
+  /** Regular expression sources for wording a fixed phrase can't cover (see `MatchOptions`). */
+  searchPatterns?: readonly string[];
   ignoreWhenFollowedBy?: readonly string[];
 }
 
@@ -27,6 +31,7 @@ export const SUPPLEMENTS: readonly Supplement[] = [
     id: "calcium",
     name: "Calcium",
     aliases: ["calcium carbonate", "calcium citrate"],
+    searchPatterns: [mineralInList("calcium")],
     searchTerms: mineral("calcium", ["calcium carbonate", "calcium citrate"]),
   },
   { id: "cbd", name: "CBD (cannabidiol)", aliases: ["cannabidiol"] },
@@ -51,6 +56,7 @@ export const SUPPLEMENTS: readonly Supplement[] = [
     id: "iron",
     name: "Iron",
     aliases: ["ferrous sulfate", "ferrous fumarate", "ferrous gluconate"],
+    searchPatterns: [mineralInList("iron")],
     searchTerms: mineral("iron", [
       "ferrous sulfate",
       "ferrous fumarate",
@@ -64,6 +70,7 @@ export const SUPPLEMENTS: readonly Supplement[] = [
     id: "magnesium",
     name: "Magnesium",
     aliases: [],
+    searchPatterns: [mineralInList("magnesium")],
     searchTerms: mineral("magnesium", [
       "magnesium hydroxide",
       "magnesium oxide",
@@ -125,6 +132,7 @@ export const SUPPLEMENTS: readonly Supplement[] = [
     id: "zinc",
     name: "Zinc",
     aliases: [],
+    searchPatterns: [mineralInList("zinc")],
     searchTerms: mineral("zinc", ["zinc sulfate", "zinc gluconate"]),
   },
 ];
@@ -160,6 +168,26 @@ function mineral(word: string, salts: string[]): string[] {
         ]
       : []),
   ];
+}
+
+/**
+ * A mineral anywhere in a list of minerals that follows "containing" or "antacid(s)", e.g.
+ * "antacids containing aluminum, calcium, or magnesium" (tetracycline labels). Lists elsewhere,
+ * such as "serum calcium and magnesium", are lab values and don't count.
+ */
+function mineralInList(word: string): string {
+  // (Declared inside the function: SUPPLEMENTS above calls this while the module loads.)
+  const minerals = "aluminum|aluminium|bismuth|calcium|iron|magnesium|zinc";
+  const listed = `(?:${minerals})(?:-containing)?(?:\\s*,\\s*|\\s+)(?:(?:and|or|and/or)\\s+)?`;
+  return `(?:containing|antacids?)\\s+(?:${listed})*${word}`;
+}
+
+/** How to match a supplement's terms in label text. */
+export function supplementMatchOptions(supplement: Supplement | undefined): MatchOptions {
+  return {
+    ignoreWhenFollowedBy: supplement?.ignoreWhenFollowedBy ?? [],
+    patterns: supplement?.searchPatterns ?? [],
+  };
 }
 
 /**

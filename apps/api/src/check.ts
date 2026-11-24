@@ -1,6 +1,7 @@
 import {
   allPairs,
   type CabinetItem,
+  type ClinicalRule,
   CONDITION_SECTIONS,
   type Finding,
   findMention,
@@ -12,9 +13,12 @@ import {
   type InteractionCheckResult,
   type LabelSection,
   type MatchOptions,
+  matchingRules,
   type ProfileCondition,
+  RULES,
   type Source,
   supplementLabelIngredients,
+  supplementMatchOptions,
   supplementTerms,
   type UncheckedPair,
 } from "@drugreview/core";
@@ -63,14 +67,18 @@ interface PreparedCondition {
  *
  * Deterministic text matching only: no AI, no guessing. If a source fails, the whole check is
  * reported as unavailable rather than returning a partial answer that could look reassuring.
+ *
+ * `rules` are the clinically reviewed rules to apply (layer 3). Only rules that passed review are
+ * ever used: `matchingRules` drops drafts, whatever is passed here.
  */
 export async function checkInteractions(
   items: readonly CabinetItem[],
   data: DrugData,
   profile?: HealthProfile,
+  rules: readonly ClinicalRule[] = RULES,
 ): Promise<InteractionCheckResult> {
   try {
-    return await runCheck(items, data, profile?.conditions ?? []);
+    return await runCheck(items, data, profile?.conditions ?? [], rules);
   } catch (error) {
     if (error instanceof UpstreamError) {
       return { status: "unavailable", reason: "A data source didn't respond." };
@@ -99,6 +107,7 @@ async function runCheck(
   items: readonly CabinetItem[],
   data: DrugData,
   conditions: readonly ProfileCondition[],
+  rules: readonly ClinicalRule[],
 ): Promise<InteractionCheckResult> {
   // 1. What each item is made of, and which labels to read for it.
   const ingredientLists = await mapLimit(items, CONCURRENCY, async (item) =>
@@ -146,7 +155,7 @@ async function runCheck(
       ownNames,
       labels,
       terms,
-      matchOptions: { ignoreWhenFollowedBy: supplement?.ignoreWhenFollowedBy ?? [] },
+      matchOptions: supplementMatchOptions(supplement),
     };
   });
 
@@ -244,13 +253,41 @@ async function runCheck(
     });
   }
 
+  // 5. Clinically reviewed rules, for risks no label states. These don't need a label, so items
+  // without one are checked too. Typed-in conditions have no rules.
+  const ruleSources = new Map<string, Source>();
+  conditions.forEach((condition, conditionIndex) => {
+    if (!("id" in condition)) return;
+    prepared.forEach(({ item, ingredients }, itemIndex) => {
+      const target = {
+        ingredients: ingredients.map((i) => i.name),
+        ...(item.kind === "supplement" ? { supplementId: item.supplementId } : {}),
+      };
+      for (const rule of matchingRules(target, condition.id, rules)) {
+        rule.citations.forEach((c) => ruleSources.set(c.url, c));
+        findings.push({
+          type: "reviewed_rule",
+          item: itemIndex,
+          condition: conditionIndex,
+          rule: { id: rule.id, version: rule.version },
+          appliesTo: rule.appliesTo,
+          priority: rule.priority,
+          statement: rule.statement,
+          citations: [...rule.citations],
+          reviewedBy: rule.reviewedBy,
+          reviewedAt: rule.reviewedAt,
+        });
+      }
+    });
+  });
+
   return {
     status: "checked",
     findings,
     unchecked,
     uncheckedForConditions,
     checkedPairs,
-    sources: [RXNORM_SOURCE, ...[...usedLabels.values()].map(sourceFor)],
+    sources: [RXNORM_SOURCE, ...[...usedLabels.values()].map(sourceFor), ...ruleSources.values()],
     checkedAt: new Date().toISOString(),
   };
 }

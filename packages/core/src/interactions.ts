@@ -111,13 +111,45 @@ export const ConditionCaution = z.object({
 });
 export type ConditionCaution = z.infer<typeof ConditionCaution>;
 
+/**
+ * How prominently a finding is shown. For label findings this comes from the label section, for
+ * reviewed rules from the reviewer. It is not a clinical severity grade.
+ */
+export const Priority = z.enum(["high", "caution"]);
+export type Priority = z.infer<typeof Priority>;
+
+/**
+ * A clinically reviewed rule (see `rules.ts`) applies to an item and a condition in the person's
+ * profile. This is not label text: it is shown as "From a reviewed rule", with its citations.
+ */
+export const ReviewedRuleFinding = z.object({
+  type: z.literal("reviewed_rule"),
+  /** Index into the request's `items`. */
+  item: Index,
+  /** Index into the request's `profile.conditions`. */
+  condition: Index,
+  rule: z.object({ id: z.string(), version: z.number().int().positive() }),
+  /** What the rule covers, e.g. "Oral magnesium". */
+  appliesTo: z.string(),
+  priority: Priority,
+  /** The rule's text, as approved by the reviewer. */
+  statement: z.string().min(1),
+  citations: z.array(Source).min(1),
+  reviewedBy: z.string().min(1),
+  reviewedAt: z.iso.date(),
+});
+export type ReviewedRuleFinding = z.infer<typeof ReviewedRuleFinding>;
+
 export const Finding = z.discriminatedUnion("type", [
   LabelMention,
   SameIngredient,
   ConditionCaution,
+  ReviewedRuleFinding,
 ]);
 export type Finding = z.infer<typeof Finding>;
 export type PairFinding = LabelMention | SameIngredient;
+/** Findings about an item and a condition in the person's profile. */
+export type ConditionFinding = ConditionCaution | ReviewedRuleFinding;
 
 export const UncheckedReason = z.enum([
   /** Both items are supplements, which have no official label to check. */

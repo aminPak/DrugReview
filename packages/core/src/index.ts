@@ -6,4 +6,5 @@ export * from "./interactions";
 export * from "./matching";
 export * from "./messages";
 export * from "./present";
+export * from "./rules";
 export * from "./supplements";

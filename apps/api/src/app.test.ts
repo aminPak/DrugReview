@@ -1,4 +1,9 @@
-import { InteractionCheckResult, type ResolvedDrug } from "@drugreview/core";
+import {
+  type ClinicalRule,
+  InteractionCheckResult,
+  type ResolvedDrug,
+  RULES,
+} from "@drugreview/core";
 import { describe, expect, it } from "vitest";
 
 import { createApp } from "./app";
@@ -11,6 +16,7 @@ const ingredients: Record<string, { rxcui: string; name: string }[]> = {
   "202433": [{ rxcui: "161", name: "acetaminophen" }], // Tylenol
   "999": [{ rxcui: "999", name: "unlabelled" }],
   "2551": [{ rxcui: "2551", name: "ciprofloxacin" }],
+  "3640": [{ rxcui: "3640", name: "doxycycline" }],
 };
 
 const labels: Record<string, DrugLabel> = {
@@ -43,6 +49,11 @@ const labels: Record<string, DrugLabel> = {
         "Fluoroquinolones may exacerbate muscle weakness in patients with myasthenia gravis. Avoid in patients with known history of myasthenia gravis.",
       warnings_and_cautions: "Use with caution in patients with renal impairment.",
     },
+  },
+  doxycycline: {
+    setId: "doxy-set",
+    title: "Doxycycline",
+    sections: { warnings: "Photosensitivity has been observed with tetracyclines." },
   },
   "magnesium sulfate": {
     setId: "mgso4-set",
@@ -81,8 +92,13 @@ function fakeData(overrides: Partial<DrugData> = {}): DrugData {
   };
 }
 
-function appWith(data = fakeData()) {
-  return createApp({ allowedOrigins: ["http://localhost:3000"], data, logRequests: false });
+function appWith(data = fakeData(), rules?: readonly ClinicalRule[]) {
+  return createApp({
+    allowedOrigins: ["http://localhost:3000"],
+    data,
+    logRequests: false,
+    ...(rules ? { rules } : {}),
+  });
 }
 
 const warfarin = { kind: "medicine", name: "Warfarin", rxcui: "11289" };
@@ -90,8 +106,13 @@ const aspirin = { kind: "medicine", name: "Aspirin", rxcui: "1191" };
 const ginkgo = { kind: "supplement", name: "Ginkgo biloba", supplementId: "ginkgo" };
 const zinc = { kind: "supplement", name: "Zinc", supplementId: "zinc" };
 
-async function check(items: unknown[], data?: DrugData, profile?: unknown) {
-  const res = await appWith(data).request("/v1/interactions/check", {
+async function check(
+  items: unknown[],
+  data?: DrugData,
+  profile?: unknown,
+  rules?: readonly ClinicalRule[],
+) {
+  const res = await appWith(data, rules).request("/v1/interactions/check", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(profile ? { items, profile } : { items }),
@@ -244,6 +265,50 @@ describe("health profile", () => {
     if (result.status !== "checked") throw new Error("expected checked");
     expect(result.findings).toHaveLength(1);
     expect(result.findings[0]).toMatchObject({ section: "warnings_and_cautions" });
+  });
+
+  describe("clinically reviewed rules", () => {
+    const doxy = { kind: "medicine", name: "Doxycycline", rxcui: "3640" };
+    const signed = (rule: ClinicalRule): ClinicalRule => ({
+      ...rule,
+      reviewedBy: "Test Reviewer, RPh",
+      reviewedAt: "2026-11-22",
+    });
+
+    it("never shows the shipped drafts", async () => {
+      const { result } = await check([doxy, magnesium], undefined, mg);
+      if (result.status !== "checked") throw new Error("expected checked");
+      expect(result.findings.filter((f) => f.type === "reviewed_rule")).toEqual([]);
+      // Doxycycline's label doesn't mention myasthenia gravis, so it's listed as nothing found.
+      expect(result.findings.some((f) => "item" in f && f.item === 0)).toBe(false);
+    });
+
+    it("shows a rule, with its citations, once it is marked reviewed", async () => {
+      const rules = RULES.map((r) => (r.id === "magnesium-myasthenia-gravis" ? signed(r) : r));
+      const { result } = await check([doxy, magnesium], undefined, mg, rules);
+      if (result.status !== "checked") throw new Error("expected checked");
+      const ruleFindings = result.findings.filter((f) => f.type === "reviewed_rule");
+      expect(ruleFindings).toHaveLength(1);
+      const finding = ruleFindings[0]!;
+      expect(finding).toMatchObject({
+        item: 1,
+        condition: 0,
+        rule: { id: "magnesium-myasthenia-gravis", version: 1 },
+        reviewedBy: "Test Reviewer, RPh",
+        reviewedAt: "2026-11-22",
+      });
+      expect(finding.citations.length).toBeGreaterThan(0);
+      for (const citation of finding.citations) {
+        expect(result.sources).toContainEqual(citation);
+      }
+    });
+
+    it("doesn't publish a signed rule that has no statement or citation", async () => {
+      // The tetracycline draft has no supporting source yet, so signing it isn't enough.
+      const { result } = await check([doxy], undefined, mg, RULES.map(signed));
+      if (result.status !== "checked") throw new Error("expected checked");
+      expect(result.findings).toEqual([]);
+    });
   });
 
   it("lists items it couldn't check against the conditions", async () => {

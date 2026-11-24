@@ -5,12 +5,14 @@ import {
   type Finding,
   findingTitle,
   type InteractionCheckResult,
+  itemConditionLabel,
   pairLabel,
   type Priority,
   type ProfileCondition,
   quietConditions,
   quietPairs,
   rankFindings,
+  ruleReviewLine,
   viaNote,
 } from "@drugreview/core";
 import { priorityTone, radius, spacing } from "@drugreview/ui";
@@ -179,10 +181,10 @@ export default function ResultsScreen() {
       {total > 0 && quietConds.length > 0 && (
         <Card tone="neutral">
           <AppText style={styles.bold}>{m.results.quietConditionsTitle}</AppText>
-          <AppText variant="small">{m.results.quietBody}</AppText>
-          {quietConds.map((i) => (
-            <AppText key={i} variant="muted">
-              • {conditionName(state.conditions[i])}
+          <AppText variant="small">{m.results.quietConditionsBody}</AppText>
+          {quietConds.map((pair) => (
+            <AppText key={`${pair.item}-${pair.condition}`} variant="muted">
+              • {itemConditionLabel(pair, state.items, state.conditions)}
             </AppText>
           ))}
         </Card>
@@ -237,12 +239,16 @@ function FindingCard({
             {m.results.priority[priority].tag.toUpperCase()}
           </AppText>
         </View>
-        {finding.type !== "same_ingredient" && (
-          <Badge label={m.results.inSection(m.sections[finding.section])} tone="neutral" />
+        {finding.type === "reviewed_rule" ? (
+          <Badge label={m.results.reviewedRuleTag} tone="primary" />
+        ) : (
+          finding.type !== "same_ingredient" && (
+            <Badge label={m.results.inSection(m.sections[finding.section])} tone="neutral" />
+          )
         )}
       </View>
 
-      {finding.type === "condition_caution" && (
+      {(finding.type === "condition_caution" || finding.type === "reviewed_rule") && (
         <AppText color={colors.primary} style={styles.bold}>
           {m.results.becauseYouHave(conditionName(snapshot.conditions[finding.condition]))}
         </AppText>
@@ -254,6 +260,28 @@ function FindingCard({
 
       {finding.type === "same_ingredient" ? (
         <AppText variant={high ? "body" : "muted"}>{m.results.sameIngredientBody}</AppText>
+      ) : finding.type === "reviewed_rule" ? (
+        <>
+          {/* Not label text, so not shown as a quotation. */}
+          <AppText>{finding.statement}</AppText>
+          <AppText variant="small">{m.results.ruleAppliesTo(finding.appliesTo)}</AppText>
+          <AppText variant="small">{m.results.reviewedRuleBody}</AppText>
+          <AppText variant="small">{ruleReviewLine(finding, m)}</AppText>
+          <AppText variant="small" style={styles.bold}>
+            {m.results.ruleSourcesTitle}
+          </AppText>
+          {finding.citations.map((citation) => (
+            <Pressable
+              key={citation.url}
+              accessibilityRole="link"
+              onPress={() => WebBrowser.openBrowserAsync(citation.url)}
+            >
+              <AppText color={colors.primary} style={styles.link}>
+                {citation.name} ↗
+              </AppText>
+            </Pressable>
+          ))}
+        </>
       ) : (
         <>
           <View style={[styles.quote, { borderLeftColor: high ? colors.danger : colors.border }]}>

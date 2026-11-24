@@ -26,15 +26,43 @@ It replaces the first prototype's idea of "AI drug review + supplement shop". Th
 
 ## Core features
 
-| Feature                         | What it does                                                                                                                                                                    | Version |
-| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
-| **My list**                     | One list of prescriptions, OTC medicines and supplements. Add by search; later by barcode or a photo of the label.                                                              | v1      |
-| **Health profile**              | Conditions, life stage (pregnancy, breastfeeding, 65+) and anything typed as written; later lab values, allergies and diet. Stored on the device.                               | v1      |
-| **Safety check**                | Checks every pair of items, and every item against the health profile, against official sources, and shows what they say with a link. See [safety-checks.md](safety-checks.md). | v1      |
-| **Public checker (web)**        | The same check on the website, no account needed. Brings people in from search.                                                                                                 | v1      |
-| **Plain-language explanations** | AI rewrites the official text in plain language, in the user's language, citing the source sentence.                                                                            | v2      |
-| **Lab results**                 | A photo or PDF becomes structured values the user confirms. Trends, questions for the doctor, "seek care now" for dangerous values. Units (mg/dL vs mmol/L) and LOINC.          | v3      |
-| **Everyday use**                | Reminders, caregiver/family mode, a summary PDF for doctor visits, Apple Health and Android Health Connect sync.                                                                | v3+     |
+| Feature                         | What it does                                                                                                                                                                           | Version |
+| ------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| **My list**                     | One list of prescriptions, OTC medicines and supplements. Add by search; later by barcode or a photo of the label. v1.2 adds dose, frequency and what each is for.                     | v1      |
+| **Health profile**              | v1: conditions, life stage (pregnancy, breastfeeding, 65+) and anything typed as written, on the device. Later: allergies (v1.2), food and lifestyle (v2), lab values (v3). See below. | v1      |
+| **Safety check**                | Checks every pair of items, and every item against the health profile, against official sources, and shows what they say with a link. See [safety-checks.md](safety-checks.md).        | v1      |
+| **Public checker (web)**        | The same check on the website, no account needed. Brings people in from search.                                                                                                        | v1      |
+| **Plain-language explanations** | AI rewrites the official text in plain language, in the user's language, citing the source sentence.                                                                                   | v2      |
+| **Lab results**                 | A photo or PDF becomes structured values the user confirms. Trends, questions for the doctor, "seek care now" for dangerous values. Units (mg/dL vs mmol/L) and LOINC.                 | v3      |
+| **Everyday use**                | Reminders, caregiver/family mode, a summary PDF for doctor visits, Apple Health and Android Health Connect sync.                                                                       | v3+     |
+
+## Profile data: what it holds and when
+
+What a person can record today, and where each missing piece is planned. Version details are in [roadmap.md](roadmap.md); how each piece feeds the check is in [safety-checks.md](safety-checks.md).
+
+| Data                                                               | Used for                                                       | Version          |
+| ------------------------------------------------------------------ | -------------------------------------------------------------- | ---------------- |
+| Medicines and supplements (name and type)                          | Item × item, same ingredient                                   | **v1 (built)**   |
+| Conditions (curated list or typed as written), life stages         | Item × condition, item × life stage                            | **v1 (built)**   |
+| Dose and strength, how often, what it's for, start date, notes     | Shown on the summary for the pharmacist                        | v1.2             |
+| Allergies and past reactions (drug class or specific medicine)     | Item × allergy                                                 | v1.2             |
+| Age band or birth year, sex at birth, pregnancy and breastfeeding  | Age and life-stage checks (replaces the life-stage conditions) | v1.2             |
+| Shareable summary of list, profile and findings                    | Taking it to a pharmacist or doctor                            | v1.2             |
+| Food and lifestyle: grapefruit, alcohol, vitamin K, tyramine       | Item × food                                                    | v2               |
+| Total daily amount of a shared ingredient                          | Showing the sum next to the label's wording (display only)     | v2, after review |
+| Same profile on every device                                       | Mobile and web in step                                         | v2 (accounts)    |
+| Lab results (LOINC code, value, SI unit, range, date)              | Item × lab value; conditions set from confirmed values; trends | v3               |
+| Weight, height, blood pressure from Apple Health or Health Connect | Context for the pharmacist; later checks                       | v3+              |
+| Several people (caregiver mode)                                    | One profile and list per person                                | v3               |
+
+**Rules for profile data**
+
+1. **Collect only what a check uses or the person shows to a professional.** BC's PIPA asks for limited collection, and an unused field is a liability.
+2. **Everything is optional,** and "I don't know" is a valid answer. A missing field is listed as "not checked", never treated as "no problem".
+3. **Stays on the device until accounts exist** (v2). After that, stored in Canada, exportable and deletable by the person.
+4. **The person confirms every value** that came from a photo, a scan or an AI step before it is saved or used.
+5. **Dose is never used to say a combination is safe** or to suggest a dose. It is shown, not judged, until a reviewed rule or licensed knowledge base says otherwise.
+6. **No analytics or ad SDKs** receive any of it.
 
 ## Safety principles
 

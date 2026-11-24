@@ -1,6 +1,12 @@
 import { describe, expect, it } from "vitest";
 
-import { findMention, getSupplement, searchSupplements, supplementTerms } from "./index";
+import {
+  findMention,
+  getSupplement,
+  searchSupplements,
+  supplementMatchOptions,
+  supplementTerms,
+} from "./index";
 
 const warfarinLabel =
   "7.3 Botanical (Herbal) Products. Some botanicals may cause bleeding events when taken alone (e.g., garlic and Ginkgo biloba) and may have anticoagulant properties. Concomitant use with St. John’s Wort may reduce effect.";
@@ -46,6 +52,37 @@ describe("findMention", () => {
       findMention("Decreased absorption with multivalent cation-containing products.", terms),
     ).not.toBeNull();
     expect(findMention("Serum magnesium levels were measured.", terms)).toBeNull();
+  });
+
+  it("finds a mineral named in a list of antacid ingredients", () => {
+    const tetracycline =
+      "Absorption of tetracyclines is impaired by antacids containing aluminum, calcium, or magnesium, and iron-containing preparations.";
+    for (const id of ["magnesium", "calcium"]) {
+      const supplement = getSupplement(id)!;
+      expect(
+        findMention(tetracycline, supplementTerms(supplement), supplementMatchOptions(supplement)),
+      ).toBe(tetracycline);
+    }
+    const zinc = getSupplement("zinc")!;
+    expect(
+      findMention(
+        "Avoid antacids such as products containing calcium and zinc.",
+        supplementTerms(zinc),
+        supplementMatchOptions(zinc),
+      ),
+    ).not.toBeNull();
+  });
+
+  it("doesn't treat lab values listed together as products", () => {
+    const magnesium = getSupplement("magnesium")!;
+    for (const text of [
+      "Monitor serum calcium and magnesium during treatment.",
+      "Electrolytes (potassium, calcium, magnesium) should be corrected first.",
+    ]) {
+      expect(
+        findMention(text, supplementTerms(magnesium), supplementMatchOptions(magnesium)),
+      ).toBeNull();
+    }
   });
 
   it("ignores terms too short to search safely", () => {

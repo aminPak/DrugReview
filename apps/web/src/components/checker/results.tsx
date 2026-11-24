@@ -5,16 +5,19 @@ import {
   type Finding,
   findingTitle,
   type InteractionCheckResult,
+  itemConditionLabel,
   pairLabel,
   type Priority,
   type ProfileCondition,
   quietConditions,
   quietPairs,
   rankFindings,
+  ruleReviewLine,
   viaNote,
 } from "@drugreview/core";
 import {
   AlertTriangle,
+  BookCheck,
   CheckCircle2,
   CircleHelp,
   ExternalLink,
@@ -118,10 +121,10 @@ export function Results({ snapshot, onRetry }: { snapshot: CheckSnapshot; onRetr
             </NoticeCard>
           )}
           {total > 0 && quietConds.length > 0 && (
-            <NoticeCard title={m.results.quietConditionsTitle} body={m.results.quietBody}>
-              {quietConds.map((i) => (
-                <li key={i} className="font-medium">
-                  {conditionName(conditions[i])}
+            <NoticeCard title={m.results.quietConditionsTitle} body={m.results.quietConditionsBody}>
+              {quietConds.map((pair) => (
+                <li key={`${pair.item}-${pair.condition}`} className="font-medium">
+                  {itemConditionLabel(pair, items, conditions)}
                 </li>
               ))}
             </NoticeCard>
@@ -268,12 +271,19 @@ function FindingCard({
         >
           {m.results.priority[priority].tag}
         </span>
-        {finding.type !== "same_ingredient" && (
-          <Badge>{m.results.inSection(m.sections[finding.section])}</Badge>
+        {finding.type === "reviewed_rule" ? (
+          <Badge>
+            <BookCheck className="size-3.5" />
+            {m.results.reviewedRuleTag}
+          </Badge>
+        ) : (
+          finding.type !== "same_ingredient" && (
+            <Badge>{m.results.inSection(m.sections[finding.section])}</Badge>
+          )
         )}
       </div>
 
-      {finding.type === "condition_caution" && (
+      {(finding.type === "condition_caution" || finding.type === "reviewed_rule") && (
         <p className="mt-3 flex items-center gap-1.5 text-sm font-semibold text-primary">
           <HeartPulse className="size-4" />
           {m.results.becauseYouHave(conditionName(snapshot.conditions[finding.condition]))}
@@ -289,6 +299,38 @@ function FindingCard({
         <p className={cn("mt-2 text-sm", high ? "font-medium" : "text-muted-foreground")}>
           {m.results.sameIngredientBody}
         </p>
+      ) : finding.type === "reviewed_rule" ? (
+        <>
+          {/* Not label text, so not shown as a quotation. */}
+          <p className={cn("mt-3 text-sm leading-6", high ? "font-medium" : "text-foreground")}>
+            {finding.statement}
+          </p>
+          <p className="mt-2 text-xs text-muted-foreground">
+            {m.results.ruleAppliesTo(finding.appliesTo)}
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">{m.results.reviewedRuleBody}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{ruleReviewLine(finding, m)}</p>
+          <div className="mt-3">
+            <p className="text-xs font-semibold text-muted-foreground">
+              {m.results.ruleSourcesTitle}
+            </p>
+            <ul className="mt-1 space-y-1">
+              {finding.citations.map((citation) => (
+                <li key={citation.url}>
+                  <a
+                    href={citation.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-start gap-1.5 text-sm font-medium text-primary hover:underline"
+                  >
+                    {citation.name}
+                    <ExternalLink className="mt-1 size-3.5 shrink-0" />
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </>
       ) : (
         <>
           <blockquote
