@@ -79,7 +79,7 @@ No accounts and no new data sources. Everything stays on the device, optional, a
 - [ ] English and French.
 - [ ] Usability test of the v1.1 journey with real users ([user-journey.md](user-journey.md)).
 - [ ] Regulatory view on dose-related features (per-item dose, total daily amount) and on lab-driven checks, before v2 and v3 build them.
-- [ ] Security review; app store bundle IDs on a domain we own.
+- [ ] Security review; app store bundle IDs are set to `health.envext.app` (domain envext.health), confirm before the first store submission.
 - [ ] CI pipeline.
 
 ## Open decisions
@@ -87,6 +87,6 @@ No accounts and no new data sources. Everything stays on the device, optional, a
 | Decision                  | Current answer                                    |
 | ------------------------- | ------------------------------------------------- |
 | Launch market             | **Decided:** Vancouver, Canada                    |
-| Product name              | "DrugReview" (working title)                      |
+| Product name and domain   | **Decided:** Envext Health, envext.health         |
 | Licensed interaction data | None yet; v1 uses US label mentions               |
 | Mobile styling library    | React Native styles; NativeWind once v5 is stable |

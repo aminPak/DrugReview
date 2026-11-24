@@ -1,4 +1,4 @@
-# Container for the DrugReview API (apps/api), for Google Cloud Run.
+# Container for the Envext Health API (apps/api), for Google Cloud Run.
 # Build from the repository root:  docker build -t drugreview-api .
 # The website (Vercel) and mobile app (Expo EAS) are deployed separately.
 
