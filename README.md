@@ -74,6 +74,26 @@ On Windows, stop the dev servers before installing packages; Metro locks files a
 | `pnpm format`       | Format everything with Prettier         |
 | `pnpm format:check` | Fail if any file isn't formatted        |
 
+## Hosting
+
+| Part    | Where                          | Deployment file        |
+| ------- | ------------------------------ | ---------------------- |
+| API     | Google Cloud Run, Montréal     | `Dockerfile` (root)    |
+| Website | Vercel, Montréal region (yul1) | `apps/web/vercel.json` |
+| Mobile  | Expo EAS → App Store, Play     | `apps/mobile/eas.json` |
+
+Step-by-step setup for beginners: [docs/hosting-setup-cheat-sheet.pdf](docs/hosting-setup-cheat-sheet.pdf).
+
+To test the API container locally (needs Docker Desktop running):
+
+```powershell
+docker build -t drugreview-api .
+```
+
+```powershell
+docker run --rm -p 8787:8080 drugreview-api
+```
+
 ## Safety rule for interaction checks
 
 An interaction check returns `checked` or `unavailable`. `checked` lists findings, pairs with nothing found and pairs that couldn't be checked; none of these mean "safe". Apps must show `unavailable` as "we couldn't check this", never as "no interactions found". Full principles: [docs/product.md](docs/product.md#safety-principles).
