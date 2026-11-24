@@ -2,10 +2,11 @@
 
 import {
   type CabinetItem,
+  canRunCheck,
   displayName,
-  type InteractionCheckResult,
   isSupplementName,
   itemKey,
+  type ProfileCondition,
   type Supplement,
   searchSupplements,
 } from "@drugreview/core";
@@ -18,51 +19,56 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { api, m } from "@/lib/app";
 
-import { Results } from "./results";
+import { ProfilePanel } from "./profile-panel";
+import { type CheckSnapshot, Results } from "./results";
 
-const STORAGE_KEY = "drugreview.list.v1";
-
-/** The list lives only in this browser. Storage can be unavailable (private mode), so fail quietly. */
-function loadList(): CabinetItem[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as CabinetItem[]) : [];
-  } catch {
-    return [];
-  }
+/**
+ * A tiny store over localStorage, so the server render (empty) and the browser agree. The data
+ * lives only in this browser; storage can be unavailable (private mode), so fail quietly.
+ */
+function createStore<T>(key: string, empty: T) {
+  const listeners = new Set<() => void>();
+  let current: T | null = null;
+  return {
+    empty,
+    subscribe(listener: () => void) {
+      listeners.add(listener);
+      return () => listeners.delete(listener);
+    },
+    get(): T {
+      if (current === null) {
+        try {
+          const raw = localStorage.getItem(key);
+          current = raw ? (JSON.parse(raw) as T) : empty;
+        } catch {
+          current = empty;
+        }
+      }
+      return current;
+    },
+    set(next: T) {
+      current = next;
+      try {
+        localStorage.setItem(key, JSON.stringify(next));
+      } catch {
+        // Not saved; it still works for this visit.
+      }
+      listeners.forEach((listener) => listener());
+    },
+  };
 }
 
-function saveList(items: CabinetItem[]) {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-  } catch {
-    // Not saved; the list still works for this visit.
-  }
-}
+const listStore = createStore<CabinetItem[]>("drugreview.list.v1", []);
+const profileStore = createStore<ProfileCondition[]>("drugreview.profile-conditions.v1", []);
 
-/** A tiny store over localStorage, so the server render (empty list) and the browser agree. */
-const listStore = {
-  listeners: new Set<() => void>(),
-  current: null as CabinetItem[] | null,
-  subscribe(listener: () => void) {
-    listStore.listeners.add(listener);
-    return () => listStore.listeners.delete(listener);
-  },
-  get: () => (listStore.current ??= loadList()),
-  set(next: CabinetItem[]) {
-    listStore.current = next;
-    saveList(next);
-    listStore.listeners.forEach((listener) => listener());
-  },
-};
-const EMPTY: CabinetItem[] = [];
+function useStore<T>(store: ReturnType<typeof createStore<T>>): T {
+  return useSyncExternalStore(store.subscribe, store.get, () => store.empty);
+}
 
 export function Checker() {
-  const items = useSyncExternalStore(listStore.subscribe, listStore.get, () => EMPTY);
-  const [result, setResult] = useState<{
-    items: CabinetItem[];
-    result: InteractionCheckResult;
-  } | null>(null);
+  const items = useStore(listStore);
+  const conditions = useStore(profileStore);
+  const [result, setResult] = useState<CheckSnapshot | null>(null);
   const [checking, setChecking] = useState(false);
 
   function update(next: CabinetItem[]) {
@@ -70,18 +76,27 @@ export function Checker() {
     setResult(null);
   }
 
+  function updateConditions(next: ProfileCondition[]) {
+    profileStore.set(next);
+    setResult(null);
+  }
+
   async function runCheck() {
     setChecking(true);
-    const snapshot = items;
-    const outcome = await api.checkInteractions(snapshot);
-    setResult({ items: snapshot, result: outcome });
+    const snapshot = { items, conditions };
+    const outcome = await api.checkInteractions(items, { conditions });
+    setResult({ ...snapshot, result: outcome });
     setChecking(false);
   }
+
+  const checkable = canRunCheck(items.length, conditions.length);
 
   const keys = new Set(items.map(itemKey));
 
   return (
     <div className="mt-8 space-y-6">
+      <ProfilePanel conditions={conditions} onChange={updateConditions} />
+
       <AddItem existing={keys} onAdd={(item) => update([...items, item])} />
 
       <Card>
@@ -113,15 +128,15 @@ export function Checker() {
           </ul>
         )}
         <div className="mt-4 flex flex-wrap items-center gap-3">
-          <Button size="lg" disabled={items.length < 2 || checking} onClick={runCheck}>
+          <Button size="lg" disabled={!checkable || checking} onClick={runCheck}>
             {checking && <Loader2 className="animate-spin" />}
             {checking ? m.results.checking : m.list.check}
           </Button>
-          {items.length < 2 && <p className="text-sm text-muted-foreground">{m.list.needTwo}</p>}
+          {!checkable && <p className="text-sm text-muted-foreground">{m.list.needMore}</p>}
         </div>
       </Card>
 
-      {result && <Results items={result.items} result={result.result} onRetry={runCheck} />}
+      {result && <Results snapshot={result} onRetry={runCheck} />}
     </div>
   );
 }

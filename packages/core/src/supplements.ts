@@ -1,3 +1,5 @@
+import type { MatchOptions } from "./matching";
+
 /**
  * Common supplement ingredients and the other names they appear under in drug labels.
  *
@@ -14,6 +16,8 @@ export interface Supplement {
    * word appears everywhere (lab values, disease names), so only supplement-specific phrases count.
    */
   searchTerms?: readonly string[];
+  /** Regular expression sources for wording a fixed phrase can't cover (see `MatchOptions`). */
+  searchPatterns?: readonly string[];
   ignoreWhenFollowedBy?: readonly string[];
 }
 
@@ -27,6 +31,7 @@ export const SUPPLEMENTS: readonly Supplement[] = [
     id: "calcium",
     name: "Calcium",
     aliases: ["calcium carbonate", "calcium citrate"],
+    searchPatterns: [mineralInList("calcium")],
     searchTerms: mineral("calcium", ["calcium carbonate", "calcium citrate"]),
   },
   { id: "cbd", name: "CBD (cannabidiol)", aliases: ["cannabidiol"] },
@@ -51,6 +56,7 @@ export const SUPPLEMENTS: readonly Supplement[] = [
     id: "iron",
     name: "Iron",
     aliases: ["ferrous sulfate", "ferrous fumarate", "ferrous gluconate"],
+    searchPatterns: [mineralInList("iron")],
     searchTerms: mineral("iron", [
       "ferrous sulfate",
       "ferrous fumarate",
@@ -64,6 +70,7 @@ export const SUPPLEMENTS: readonly Supplement[] = [
     id: "magnesium",
     name: "Magnesium",
     aliases: [],
+    searchPatterns: [mineralInList("magnesium")],
     searchTerms: mineral("magnesium", [
       "magnesium hydroxide",
       "magnesium oxide",
@@ -125,6 +132,7 @@ export const SUPPLEMENTS: readonly Supplement[] = [
     id: "zinc",
     name: "Zinc",
     aliases: [],
+    searchPatterns: [mineralInList("zinc")],
     searchTerms: mineral("zinc", ["zinc sulfate", "zinc gluconate"]),
   },
 ];
@@ -137,10 +145,76 @@ function mineral(word: string, salts: string[]): string[] {
     `${word} supplements`,
     `${word}-containing`,
     `${word} containing`,
+    `containing ${word}`,
     `${word} salts`,
     `${word} products`,
     `oral ${word}`,
+    `${word}/aluminum`,
+    `aluminum/${word}`,
+    // Labels often group minerals together, e.g. ciprofloxacin's "multivalent cation-containing
+    // products". These phrases apply to calcium, iron, magnesium and zinc alike.
+    // (Declared inside the function: SUPPLEMENTS above calls this while the module loads.)
+    ...(["calcium", "iron", "magnesium", "zinc"].includes(word)
+      ? [
+          "multivalent cation",
+          "multivalent cations",
+          "multivalent cation-containing",
+          "polyvalent cation",
+          "polyvalent cations",
+          "divalent cation",
+          "divalent cations",
+          "di- and trivalent cations",
+          "metal cations",
+        ]
+      : []),
   ];
+}
+
+/**
+ * A mineral anywhere in a list of minerals that follows "containing" or "antacid(s)", e.g.
+ * "antacids containing aluminum, calcium, or magnesium" (tetracycline labels). Lists elsewhere,
+ * such as "serum calcium and magnesium", are lab values and don't count.
+ */
+function mineralInList(word: string): string {
+  // (Declared inside the function: SUPPLEMENTS above calls this while the module loads.)
+  const minerals = "aluminum|aluminium|bismuth|calcium|iron|magnesium|zinc";
+  const listed = `(?:${minerals})(?:-containing)?(?:\\s*,\\s*|\\s+)(?:(?:and|or|and/or)\\s+)?`;
+  return `(?:containing|antacids?)\\s+(?:${listed})*${word}`;
+}
+
+/** How to match a supplement's terms in label text. */
+export function supplementMatchOptions(supplement: Supplement | undefined): MatchOptions {
+  return {
+    ignoreWhenFollowedBy: supplement?.ignoreWhenFollowedBy ?? [],
+    patterns: supplement?.searchPatterns ?? [],
+  };
+}
+
+/**
+ * Supplements have no label of their own, but many of their ingredients are also sold as
+ * medicines with an official label (for example magnesium sulfate, or phytonadione for vitamin K).
+ * Those labels are searched for this supplement, and findings say which form the label is for.
+ */
+const LABEL_INGREDIENTS: Readonly<Record<string, readonly string[]>> = {
+  caffeine: ["caffeine"],
+  calcium: ["calcium carbonate"],
+  cbd: ["cannabidiol"],
+  "fish-oil": ["omega-3-acid ethyl esters"],
+  "folic-acid": ["folic acid"],
+  iron: ["ferrous sulfate"],
+  magnesium: ["magnesium sulfate", "magnesium hydroxide", "magnesium oxide"],
+  melatonin: [],
+  niacin: ["niacin"],
+  potassium: ["potassium chloride"],
+  "vitamin-b12": ["cyanocobalamin"],
+  "vitamin-d": ["ergocalciferol", "cholecalciferol"],
+  "vitamin-k": ["phytonadione"],
+  zinc: ["zinc sulfate"],
+};
+
+/** Medicine forms of a supplement whose official labels can be searched. */
+export function supplementLabelIngredients(supplement: Supplement): readonly string[] {
+  return LABEL_INGREDIENTS[supplement.id] ?? [];
 }
 
 const byId = new Map(SUPPLEMENTS.map((s) => [s.id, s]));

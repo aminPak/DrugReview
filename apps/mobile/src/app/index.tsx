@@ -1,4 +1,10 @@
-import { type CabinetItem, displayName, itemKey } from "@drugreview/core";
+import {
+  type CabinetItem,
+  canRunCheck,
+  conditionName,
+  displayName,
+  itemKey,
+} from "@drugreview/core";
 import { radius, spacing } from "@drugreview/ui";
 import { router } from "expo-router";
 import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from "react-native";
@@ -6,11 +12,12 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 import { AppText, Badge, Button, Card } from "@/components/ui";
 import { m } from "@/lib/app";
-import { useCabinet } from "@/lib/cabinet";
+import { conditionKey, useCabinet } from "@/lib/cabinet";
 import { useColors } from "@/lib/theme";
 
 export default function MyListScreen() {
-  const { ready, items, remove, noticeAccepted } = useCabinet();
+  const { ready, items, remove, noticeAccepted, conditions } = useCabinet();
+  const checkable = canRunCheck(items.length, conditions.length);
   const colors = useColors();
 
   if (!ready) {
@@ -30,6 +37,7 @@ export default function MyListScreen() {
         contentContainerStyle={styles.list}
         ListHeaderComponent={
           <View style={styles.header}>
+            <ProfileCard />
             <AppText variant="title">{m.list.title}</AppText>
             <AppText variant="muted">{m.tagline}</AppText>
           </View>
@@ -49,15 +57,49 @@ export default function MyListScreen() {
           { borderTopColor: colors.border, backgroundColor: colors.background },
         ]}
       >
-        {items.length < 2 && <AppText variant="muted">{m.list.needTwo}</AppText>}
+        {!checkable && <AppText variant="muted">{m.list.needMore}</AppText>}
         <Button label={m.list.add} variant="outline" onPress={() => router.push("/add")} />
         <Button
           label={m.list.check}
-          disabled={items.length < 2}
+          disabled={!checkable}
           onPress={() => router.push("/results")}
         />
       </View>
     </SafeAreaView>
+  );
+}
+
+function ProfileCard() {
+  const { conditions } = useCabinet();
+  const colors = useColors();
+  return (
+    <Pressable
+      accessibilityRole="button"
+      onPress={() => router.push("/profile")}
+      style={({ pressed }) => [pressed && { opacity: 0.85 }]}
+    >
+      <Card tone="primary" style={styles.profile}>
+        <View style={styles.profileHeader}>
+          <AppText variant="heading">{m.profile.title}</AppText>
+          <AppText color={colors.primary}>
+            {conditions.length ? m.profile.edit : m.profile.add} ›
+          </AppText>
+        </View>
+        {conditions.length === 0 ? (
+          <AppText variant="muted">{m.profile.emptyBody}</AppText>
+        ) : (
+          <View style={styles.chips}>
+            {conditions.map((condition) => (
+              <Badge
+                key={conditionKey(condition)}
+                label={conditionName(condition)}
+                tone="primary"
+              />
+            ))}
+          </View>
+        )}
+      </Card>
+    </Pressable>
   );
 }
 
@@ -107,6 +149,9 @@ const styles = StyleSheet.create({
   center: { flex: 1, alignItems: "center", justifyContent: "center" },
   list: { padding: spacing.lg, paddingBottom: spacing.xxl },
   header: { gap: spacing.xs, marginBottom: spacing.lg },
+  profile: { marginBottom: spacing.lg },
+  profileHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center" },
+  chips: { flexDirection: "row", flexWrap: "wrap", gap: spacing.xs },
   row: { flexDirection: "row", alignItems: "center", gap: spacing.md },
   remove: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderRadius: radius.sm },
   actions: { padding: spacing.lg, gap: spacing.sm, borderTopWidth: StyleSheet.hairlineWidth },

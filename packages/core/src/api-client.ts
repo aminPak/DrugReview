@@ -1,6 +1,6 @@
 import type { CabinetItem } from "./cabinet";
 import { DrugSearchResponse, ResolvedDrug } from "./drugs";
-import { InteractionCheckResult } from "./interactions";
+import { type HealthProfile, InteractionCheckResult } from "./interactions";
 
 /** The API couldn't be reached or answered with something unexpected. */
 export class ApiError extends Error {
@@ -38,13 +38,16 @@ export function createApiClient(baseUrl: string) {
     },
 
     /** Never throws for a check that couldn't run: that comes back as status "unavailable". */
-    async checkInteractions(items: readonly CabinetItem[]): Promise<InteractionCheckResult> {
+    async checkInteractions(
+      items: readonly CabinetItem[],
+      profile?: HealthProfile,
+    ): Promise<InteractionCheckResult> {
       let res: Response;
       try {
         res = await request("/v1/interactions/check", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ items }),
+          body: JSON.stringify(profile?.conditions.length ? { items, profile } : { items }),
         });
       } catch {
         return { status: "unavailable", reason: "network" };

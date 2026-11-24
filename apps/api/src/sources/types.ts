@@ -16,8 +16,14 @@ export interface DrugData {
   resolve(name: string): Promise<ResolvedDrug | null>;
   /** Active ingredients of an RxNorm concept (empty if unknown). */
   ingredients(rxcui: string): Promise<Ingredient[]>;
-  /** The newest official label for an ingredient, or null if there is none. */
-  label(ingredientName: string): Promise<DrugLabel | null>;
+  /** Official labels for an ingredient, best first (empty if there are none). */
+  labels(ingredientName: string): Promise<DrugLabel[]>;
+  /** Labels for an ingredient whose given sections mention any of the terms (empty if none). */
+  labelsMentioning(
+    ingredientName: string,
+    terms: readonly string[],
+    sections: readonly LabelSection[],
+  ): Promise<DrugLabel[]>;
 }
 
 /** A data source failed or didn't respond. Callers must not treat this as "nothing found". */

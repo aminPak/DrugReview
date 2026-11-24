@@ -15,6 +15,7 @@
   --primary-soft: #e0f1ef;
   --danger: #b42318;
   --danger-soft: #fdecea;
+  --danger-foreground: #ffffff;
   --warning: #9a5b00;
   --warning-soft: #fff4e0;
   --info: #1d5fa8;
@@ -35,6 +36,7 @@
     --primary-soft: #123a37;
     --danger: #ff8a7a;
     --danger-soft: #3a1714;
+    --danger-foreground: #2a0905;
     --warning: #f5b74e;
     --warning-soft: #36260b;
     --info: #8cb8ef;
@@ -54,6 +56,7 @@
   --color-primary-soft: var(--primary-soft);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
+  --color-danger-foreground: var(--danger-foreground);
   --color-warning: var(--warning);
   --color-warning-soft: var(--warning-soft);
   --color-info: var(--info);
@@ -69,6 +72,9 @@ body {
   color: var(--foreground);
 }
 
-* {
-  border-color: var(--border);
+/* In the base layer, so border colour utilities (e.g. `border-danger`) can override it. */
+@layer base {
+  * {
+    border-color: var(--border);
+  }
 }

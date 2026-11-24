@@ -8,14 +8,16 @@ A personal medication and supplement safety companion. Keep one list of everythi
 
 - [Product brief](docs/product.md): positioning, features, safety principles, business model, the Vancouver launch, data sources, privacy.
 - [Architecture](docs/architecture.md): mobile + web strategy, stack, how an interaction check works, configuration.
+- [Context-aware safety checks](docs/safety-checks.md): how medicines and supplements are checked against each other and the person's health conditions, and the layers that come next.
 - [Roadmap](docs/roadmap.md): v1, what comes next, and what's needed before launch.
 
 ## What v1 does
 
 - **My list:** add medicines (RxNorm names) and supplements (a curated list), stored only on the device or in the browser.
-- **Interaction check:** every pair is checked against official US FDA label text for the same active ingredient. Each finding quotes the sentence, names the label section and links to the label. Two products with the same active ingredient are flagged. Pairs that couldn't be checked, or had nothing found, are listed, never shown as "safe".
-- **Mobile app:** first-run notice, my list, search and add, results.
-- **Website:** landing page and a public checker at `/check`.
+- **Health profile:** about 40 common conditions, plus pregnancy, breastfeeding and age 65+, or any condition typed as written. Stored only on the device or in the browser.
+- **Safety check:** every pair of items, and every item against the health profile, is checked against official US FDA label text for each active ingredient. Each finding quotes the sentence, names the label section and links to the label. Two products with the same active ingredient are flagged. Pairs and conditions that couldn't be checked, or had nothing found, are listed, never shown as "safe". See [docs/safety-checks.md](docs/safety-checks.md).
+- **Mobile app:** first-run notice, health profile, my list, search and add, results grouped by condition.
+- **Website:** landing page and a public checker at `/check`, with the same health profile.
 
 ## Repository layout
 
